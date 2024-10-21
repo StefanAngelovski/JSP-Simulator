@@ -14,6 +14,11 @@ public class SpawnHuman : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        SpawnRandomObject();
+    }
+
     void SpawnRandomObject()
     {
         if (currentObject != null)
