@@ -4,70 +4,108 @@ using UnityEngine;
 
 public class SpawnHuman : MonoBehaviour
 {
-    // List of human prefabs
-    public List<GameObject> humanPrefabs;
+    public GameObject[] prefabs; // Array of prefabs to spawn
+    public Transform spawnPlatform; // Single spawn platform
+    public float minSpawnInterval = 1f; // Minimum spawn interval
+    public float maxSpawnInterval = 5f; // Maximum spawn interval
+    public int maxObjects = 20; // Maximum number of objects that can be spawned at once
+    public float minDistanceBetweenUnits = 2f; // Minimum distance between spawned units
 
-    // Surface area for spawning
-    public GameObject surfaceArea;
+    private List<Vector3> spawnPositions = new List<Vector3>(); // List to track spawn positions
 
-    // Number of initial humans to spawn
-    public int initialSpawnCount = 5;
-
-    // Time interval between spawning new humans
-    public float spawnInterval = 1.0f;
-
-    private Vector3 surfaceMin;
-    private Vector3 surfaceMax;
-
-    void Start()
+    private void Start()
     {
-        // Calculate the boundaries of the surface area
-        CalculateSurfaceBounds();
-
-        // Spawn initial humans
-        for (int i = 0; i < initialSpawnCount; i++)
-        {
-            SpawnRandomHuman();
-        }
-
-        // Start spawning new humans every second
-        StartCoroutine(SpawnHumanOverTime());
+        // Start the coroutine for spawning objects at random intervals
+        StartCoroutine(SpawnObjects());
     }
 
-    void CalculateSurfaceBounds()
-    {
-        // Assuming surfaceArea has a BoxCollider or MeshRenderer that defines the area
-        Renderer surfaceRenderer = surfaceArea.GetComponent<Renderer>();
-        surfaceMin = surfaceRenderer.bounds.min;
-        surfaceMax = surfaceRenderer.bounds.max;
-    }
-
-    void SpawnRandomHuman()
-    {
-        // Select a random human prefab from the list
-        int randomIndex = Random.Range(0, humanPrefabs.Count);
-        GameObject humanToSpawn = humanPrefabs[randomIndex];
-
-        // Generate a random position within the surface area bounds
-        Vector3 randomPosition = new Vector3(
-            Random.Range(surfaceMin.x, surfaceMax.x),
-            surfaceMin.y, // Spawn at surface level
-            Random.Range(surfaceMin.z, surfaceMax.z)
-        );
-
-        // Instantiate the human prefab at the random position
-        Instantiate(humanToSpawn, randomPosition, Quaternion.identity);
-    }
-
-    IEnumerator SpawnHumanOverTime()
+    private IEnumerator SpawnObjects()
     {
         while (true)
         {
-            // Wait for the specified interval
-            yield return new WaitForSeconds(spawnInterval);
+            // Wait for a random time between the specified intervals
+            yield return new WaitForSeconds(Random.Range(minSpawnInterval, maxSpawnInterval));
 
-            // Spawn a random human
-            SpawnRandomHuman();
+            // Randomly determine how many objects to spawn (between 1 and 5)
+            int spawnCount = Random.Range(1, 6); // 1 to 5 inclusive
+
+            // Check how many objects can be spawned without exceeding the limit
+            int currentObjectCount = FindObjectsOfType<WalkHuman>().Length;
+            int objectsToSpawn = Mathf.Min(spawnCount, maxObjects - currentObjectCount);
+
+            // Spawn the determined number of prefabs
+            for (int i = 0; i < objectsToSpawn; i++)
+            {
+                Vector3 spawnPosition = GetValidSpawnPosition();
+                if (spawnPosition != Vector3.zero) // Ensure a valid position is found
+                {
+                    SpawnPrefab(spawnPosition);
+                }
+            }
+        }
+    }
+
+    private Vector3 GetValidSpawnPosition()
+    {
+        Vector3 randomPoint;
+        int attempts = 0;
+
+        do
+        {
+            // Get a random point within the bounds of the spawn platform
+            randomPoint = GetRandomPointInPlatform(spawnPlatform);
+            attempts++;
+
+            // Check if the point is at least 2 units away from existing units
+        } while (!IsValidSpawnPosition(randomPoint) && attempts < 10); // Limit attempts to avoid infinite loop
+
+        return attempts < 10 ? randomPoint : Vector3.zero; // Return zero if a valid position wasn't found
+    }
+
+    private bool IsValidSpawnPosition(Vector3 position)
+    {
+        foreach (Vector3 existingPosition in spawnPositions)
+        {
+            if (Vector3.Distance(existingPosition, position) < minDistanceBetweenUnits)
+            {
+                return false; // Too close to an existing unit
+            }
+        }
+
+        // If valid, add the position to the list
+        spawnPositions.Add(position);
+        return true;
+    }
+
+    private void SpawnPrefab(Vector3 position)
+    {
+        // Choose a random prefab
+        GameObject randomPrefab = prefabs[Random.Range(0, prefabs.Length)];
+
+        // Instantiate the random prefab at the specified position
+        GameObject spawnedObject = Instantiate(randomPrefab, position, Quaternion.identity);
+
+        // Add movement script to the spawned object
+        WalkHuman movement = spawnedObject.AddComponent<WalkHuman>();
+        // Additional setup for the movement can go here
+    }
+
+    private Vector3 GetRandomPointInPlatform(Transform platform)
+    {
+        Collider platformCollider = platform.GetComponent<Collider>();
+        if (platformCollider != null)
+        {
+            Vector3 randomPoint = new Vector3(
+                Random.Range(platformCollider.bounds.min.x, platformCollider.bounds.max.x),
+                platform.position.y, // Keep the y position the same as the platform
+                Random.Range(platformCollider.bounds.min.z, platformCollider.bounds.max.z)
+            );
+            return randomPoint;
+        }
+        else
+        {
+            Debug.LogWarning("No Collider found on platform: " + platform.name);
+            return platform.position; // Fallback to platform position if no collider
         }
     }
 }
