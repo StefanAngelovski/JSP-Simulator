@@ -6,6 +6,8 @@ TagManager:
   tags:
   - WalkableArea
   - Human
+  - Grid
+  - CannotDestroy
   layers:
   - Default
   - TransparentFX
@@ -14,7 +16,7 @@ TagManager:
   - Water
   - UI
   - Grid
-  - 
+  - PlacedObject
   - 
   - 
   - 
