@@ -9,14 +9,31 @@ public class SpawnHuman : MonoBehaviour
     public float minSpawnInterval = 1f; // Minimum spawn interval
     public float maxSpawnInterval = 5f; // Maximum spawn interval
     public int maxObjects = 20; // Maximum number of objects that can be spawned at once
-    public float minDistanceBetweenUnits = 5f; // Minimum distance between spawned units
+    public float minDistanceBetweenUnits = 3f; // Minimum distance between spawned units
+    public int initialSpawnCount = 10; // Number of objects to spawn initially
 
     private List<Vector3> spawnPositions = new List<Vector3>(); // List to track spawn positions
 
     private void Start()
     {
+        // Spawn an initial set of objects
+        InitialPopulation();
+
         // Start the coroutine for spawning objects at random intervals
         StartCoroutine(SpawnObjects());
+    }
+
+    void InitialPopulation()
+    {
+        // Spawn an initial set of objects to avoid a slow buildup
+        for (int i = 0; i < initialSpawnCount; i++)
+        {
+            Vector3 spawnPosition = GetValidSpawnPosition();
+            if (spawnPosition != Vector3.zero) // Ensure a valid position is found
+            {
+                SpawnPrefab(spawnPosition);
+            }
+        }
     }
 
     private IEnumerator SpawnObjects()
@@ -68,6 +85,16 @@ public class SpawnHuman : MonoBehaviour
             if (Vector3.Distance(existingPosition, position) < minDistanceBetweenUnits)
             {
                 return false; // Too close to an existing unit
+            }
+        }
+
+        // Check against existing humans in the scene
+        GameObject[] existingHumans = GameObject.FindGameObjectsWithTag("Human");
+        foreach (GameObject human in existingHumans)
+        {
+            if (Vector3.Distance(human.transform.position, position) < minDistanceBetweenUnits)
+            {
+                return false; // Too close to an existing human
             }
         }
 
