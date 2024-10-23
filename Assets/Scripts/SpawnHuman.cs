@@ -9,7 +9,7 @@ public class SpawnHuman : MonoBehaviour
     public float minSpawnInterval = 1f; // Minimum spawn interval
     public float maxSpawnInterval = 5f; // Maximum spawn interval
     public int maxObjects = 20; // Maximum number of objects that can be spawned at once
-    public float minDistanceBetweenUnits = 2f; // Minimum distance between spawned units
+    public float minDistanceBetweenUnits = 5f; // Minimum distance between spawned units
 
     private List<Vector3> spawnPositions = new List<Vector3>(); // List to track spawn positions
 
@@ -30,7 +30,7 @@ public class SpawnHuman : MonoBehaviour
             int spawnCount = Random.Range(1, 6); // 1 to 5 inclusive
 
             // Check how many objects can be spawned without exceeding the limit
-            int currentObjectCount = FindObjectsOfType<WalkHuman>().Length;
+            int currentObjectCount = spawnPositions.Count;
             int objectsToSpawn = Mathf.Min(spawnCount, maxObjects - currentObjectCount);
 
             // Spawn the determined number of prefabs
@@ -56,7 +56,6 @@ public class SpawnHuman : MonoBehaviour
             randomPoint = GetRandomPointInPlatform(spawnPlatform);
             attempts++;
 
-            // Check if the point is at least 2 units away from existing units
         } while (!IsValidSpawnPosition(randomPoint) && attempts < 10); // Limit attempts to avoid infinite loop
 
         return attempts < 10 ? randomPoint : Vector3.zero; // Return zero if a valid position wasn't found

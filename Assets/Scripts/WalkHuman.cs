@@ -1,121 +1,116 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class WalkHuman : MonoBehaviour
 {
-    public float stopDistance = 2f; // Distance to stop and destroy the object
-    public float searchRadius = 5f; // Radius within which to move randomly
-    public float waitTimeBetweenMovements = 2f; // Time delay between movements
-    public float minDistanceBetweenUnits = 5f; // Minimum distance between units
+    private NavMeshAgent agent;
+    public float moveSpeed = 3.5f; // Speed of the agent
+    public float rotationSpeed = 5f; // Speed of rotation to face the target
+    public float minWanderTime = 2f; // Minimum time to wander
+    public float maxWanderTime = 5f; // Maximum time to wander
+    public float wanderRadius = 5f; // Radius within which to wander
+    public float minDistanceToOtherHumans = 3f; // Minimum distance to maintain from other humans
+    public List<GameObject> allHumans; // List of all human GameObjects
 
-    private NavMeshAgent agent; // Reference to the NavMeshAgent component
+    private Vector3 targetPosition;
 
-    private void Start()
+    void Start()
     {
-        agent = GetComponent<NavMeshAgent>(); // Get the NavMeshAgent component
+        agent = GetComponent<NavMeshAgent>();
+        agent.speed = moveSpeed;
 
-        // Start the coroutine for random movements
-        StartCoroutine(SetNewTargetPointRoutine()); // Begin the coroutine for random movement
+        allHumans = new List<GameObject>(GameObject.FindGameObjectsWithTag("Human"));
+
+        StartCoroutine(Wander());
     }
 
-    private void Update()
-    {
-      
-
-        // Check and adjust positions if too close to other units
-        AdjustPositionIfTooClose();
-    }
-
-    // Coroutine for picking new movement points with a delay
-    private IEnumerator SetNewTargetPointRoutine()
+    IEnumerator Wander()
     {
         while (true)
         {
-            // Set a new movement point
-            SetNewTargetPoint();
-
-            // Wait for a certain amount of time before selecting another position
-            yield return new WaitForSeconds(waitTimeBetweenMovements);
+            SetNewTarget();
+            yield return new WaitForSeconds(Random.Range(minWanderTime, maxWanderTime));
         }
     }
 
-    // Function to set a new random point within the search radius
-    private void SetNewTargetPoint()
+  void SetNewTarget()
+{
+    Vector3 newTargetPosition = Vector3.zero; // Initialize the variable
+    int attempts = 0; // Add a counter for attempts
+    const int maxAttempts = 20; // Set a max attempt limit
+
+    do
     {
-        Vector3 randomPoint;
+        // Generate a random point within a defined radius
+        Vector3 randomDirection = Random.insideUnitSphere * wanderRadius;
+        randomDirection += transform.position;
+
+        // Find a valid point on the NavMesh
         NavMeshHit hit;
-        int attempts = 0;
-        bool validPointFound = false;
-
-        // Try to find a valid point within a certain number of attempts
-        while (attempts < 10 && !validPointFound)
+        if (NavMesh.SamplePosition(randomDirection, out hit, wanderRadius, NavMesh.AllAreas))
         {
-            // Get a random point within a sphere around the current position
-            randomPoint = transform.position + Random.insideUnitSphere * searchRadius;
-            randomPoint.y = transform.position.y; // Keep the original height
-
-            // Check if the random point is valid on the NavMesh
-            if (NavMesh.SamplePosition(randomPoint, out hit, searchRadius, NavMesh.AllAreas))
-            {
-                // Check distance from all other active WalkHuman objects
-                if (IsValidDistance(hit.position))
-                {
-                    agent.SetDestination(hit.position); // Set the agent's destination to the new point
-                    validPointFound = true; // Mark that a valid point was found
-                }
-            }
-            attempts++;
+            newTargetPosition = hit.position; // Assign the value if valid
+        }
+        else
+        {
+            continue; // If no valid point found, try again
         }
 
-        // Optional: if no valid point is found, you can log a warning
-        if (!validPointFound)
-        {
-            Debug.LogWarning($"No valid target point found for {gameObject.name} after 10 attempts.");
-        }
+        attempts++; // Increment the attempts count
+
+    } while (!IsPositionValid(newTargetPosition) && attempts < maxAttempts); // Exit if max attempts reached
+
+    // If max attempts reached without a valid position, log a warning
+    if (attempts >= maxAttempts)
+    {
+        Debug.LogWarning("Failed to find a valid target position after multiple attempts.");
+        return; // Exit the method if no valid position found
     }
 
-    // Function to check if the new position is far enough from other units
-    private bool IsValidDistance(Vector3 newPosition)
+    targetPosition = newTargetPosition;
+
+    // Set the destination for the NavMeshAgent
+    agent.SetDestination(targetPosition);
+}
+
+    bool IsPositionValid(Vector3 position)
     {
-        // Find all WalkHuman objects in the scene
-        WalkHuman[] allHumans = FindObjectsOfType<WalkHuman>();
-        foreach (WalkHuman human in allHumans)
+        // Check distance to all other humans
+        foreach (GameObject human in allHumans)
         {
-            if (human != this) // Skip the current object
+            if (human != gameObject) // Don't check against itself
             {
-                if (Vector3.Distance(newPosition, human.transform.position) < minDistanceBetweenUnits)
+                float distance = Vector3.Distance(position, human.transform.position);
+                if (distance < minDistanceToOtherHumans) // If too close, return false
                 {
-                    return false; // Too close to another unit
+                    return false;
                 }
             }
         }
-        return true; // Valid distance
+
+        return true; // Position is valid if all checks passed
     }
 
-    // Function to adjust position if too close to other units
-    private void AdjustPositionIfTooClose()
+    void Update()
     {
-        // Find all WalkHuman objects in the scene
-        WalkHuman[] allHumans = FindObjectsOfType<WalkHuman>();
-        foreach (WalkHuman human in allHumans)
+        // Smooth rotation to face the target
+        Vector3 direction = targetPosition - transform.position;
+
+        // Check if the direction is approximately zero
+        if (direction.sqrMagnitude > 0.0001f) // Use squared magnitude for efficiency
         {
-            if (human != this) // Skip the current object
+            // Ensure that the direction is not zero before looking
+            if (direction != Vector3.zero)
             {
-                float distance = Vector3.Distance(transform.position, human.transform.position);
-                if (distance < minDistanceBetweenUnits)
-                {
-                    // Move this object away from the other object
-                    Vector3 direction = (transform.position - human.transform.position).normalized;
-                    transform.position += direction * (minDistanceBetweenUnits - distance); // Move apart
-                }
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
         }
-    }
-
-    // Optional: Handle click event to destroy the object
-    private void OnMouseDown()
-    {
-        Destroy(gameObject);
+        else
+        {
+            Debug.LogWarning("Target position is too close to the current position.");
+        }
     }
 }
