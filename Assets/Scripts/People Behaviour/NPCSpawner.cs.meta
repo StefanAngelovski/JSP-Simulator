@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 5ba12e57f5a83c34f9f6d626ee78ff09
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - npcDatabase: {fileID: 11400000, guid: ce977246d6308ff478816e290e9813d1, type: 2}
+  - spawnArea: {fileID: 5709232798179608557, guid: 2bdad5fb5e22c3e4abcd46c0075ed915, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

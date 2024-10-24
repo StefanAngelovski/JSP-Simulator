@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ELDER
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: ec4f12be6be572c41929b44e46b95aa3, type: 3}
+      propertyPath: m_TagString
+      value: Character
+      objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: ec4f12be6be572c41929b44e46b95aa3, type: 3}
       propertyPath: m_Controller
       value: 
@@ -62,23 +66,57 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ec4f12be6be572c41929b44e46b95aa3, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8710934055776773336}
+      addedObject: {fileID: -1787356765674349038}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ec4f12be6be572c41929b44e46b95aa3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5270099519620604660}
   m_SourcePrefab: {fileID: 100100000, guid: ec4f12be6be572c41929b44e46b95aa3, type: 3}
 --- !u!1 &1804915578263717155 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ec4f12be6be572c41929b44e46b95aa3, type: 3}
   m_PrefabInstance: {fileID: 1570965679081224306}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8710934055776773336
-MonoBehaviour:
+--- !u!64 &-1787356765674349038
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1804915578263717155}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
+--- !u!195 &5270099519620604660
+NavMeshAgent:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1804915578263717155}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: acb2f7c5038915240a072b8d3dcb34ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  seatedDirection: {x: 0, y: -90, z: 0}
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4

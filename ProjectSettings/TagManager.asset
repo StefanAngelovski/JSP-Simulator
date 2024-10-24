@@ -8,6 +8,7 @@ TagManager:
   - Human
   - Grid
   - CannotDestroy
+  - Character
   layers:
   - Default
   - TransparentFX

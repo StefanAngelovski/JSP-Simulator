@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccb1c0099d7e0ab41b86793774b2ac7e, type: 3}
+  m_Name: NPCDatabase
+  m_EditorClassIdentifier: 
+  npcPrefabs:
+  - {fileID: 1804915578263717155, guid: 0925689e528f3994696f37d7d6f8beb3, type: 3}
+  - {fileID: 5431878859830176315, guid: 1eb20bdb7be737941a823e9a45860650, type: 3}
+  - {fileID: 4861485028473407171, guid: be31d9441801e32469827461b49fe3ba, type: 3}
+  - {fileID: 740091701420131850, guid: 3e898e5bdc58dd3429a919c19e084e92, type: 3}
+  - {fileID: 7203312015030884398, guid: a75ea18e33038bd4eb922d6be8295cc7, type: 3}
+  - {fileID: 5245900261919092037, guid: 584407b262e887c478d6cab5c5fd6f6f, type: 3}
+  - {fileID: 449715033663550538, guid: d5cac0fba12df2e42bed4c97d6d5e868, type: 3}

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Placement : MonoBehaviour
 {
-
     [SerializeField]
     private GameObject mouseIndicator, cellIndicator;
     private Renderer cellIndicatorRenderer;
@@ -18,8 +17,11 @@ public class Placement : MonoBehaviour
     private ObjectDatabaseSO database;
     private int selectedObjectIndex = -1;
 
+    // Two grid visualizations, top and bottom
     [SerializeField]
-    private GameObject gridVisualisation;
+    private GameObject gridVisualisationTop;
+    [SerializeField]
+    private GameObject gridVisualisationBottom;
 
     private GridData gridData;
 
@@ -52,13 +54,16 @@ public class Placement : MonoBehaviour
     {
         StopPlacement();
         selectedObjectIndex = database.objectsData.FindIndex(data => data.ID == ID);
-        if(selectedObjectIndex < 0)
+        if (selectedObjectIndex < 0)
         {
-            if(selectedObjectIndex != -1)
+            if (selectedObjectIndex != -1)
                 Debug.LogError($"No ID found, {ID}");
             return;
         }
-        gridVisualisation.SetActive(true);
+
+        // Activate both grid visualizations
+        gridVisualisationTop.SetActive(true);
+        gridVisualisationBottom.SetActive(true);
         cellIndicator.SetActive(true);
 
         previewObject.SetActive(true);
@@ -72,13 +77,12 @@ public class Placement : MonoBehaviour
 
     private void RotateStructure()
     {
-
-        if(rotation < 3)
+        if (rotation < 3)
             rotation += 1;
         else
             rotation = 0;
 
-        switch(rotation)
+        switch (rotation)
         {
             case 0:
                 objectOffset = new Vector3Int(0, 0, 0);
@@ -96,49 +100,55 @@ public class Placement : MonoBehaviour
 
         previewObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
         previewObject.transform.position += grid.CellToWorld(objectOffset);
-        
     }
+
+    private float placementHeightOffset = 0.1f; 
 
     private void PlaceStructure()
     {
-        if(inputManager.IsPointerOverUI())
+        if (inputManager.IsPointerOverUI())
             return;
-        
 
         Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
 
         Vector3Int placePosition = gridPosition + objectOffset;
-        
+
         bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
 
-        if(placementValidity == false)
+        if (!placementValidity)
         {
             Debug.Log("Invalid Pos");
             return;
         }
-            
 
         GameObject newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
-        newObject.transform.position = grid.CellToWorld(placePosition);
+
+        // Apply the height offset to the Y axis
+        Vector3 objectPosition = grid.CellToWorld(placePosition);
+        objectPosition.y += placementHeightOffset; // Add the height offset
+
+        newObject.transform.position = objectPosition;
         newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
         placedGameObjects.Add(newObject);
+
         gridData.AddObjectAt(gridPosition,
             rotation,
             database.objectsData[selectedObjectIndex].Size,
             database.objectsData[selectedObjectIndex].ID,
-            placedGameObjects.Count -1);
-
+            placedGameObjects.Count - 1);
     }
 
     private void StopPlacement()
     {
         selectedObjectIndex = -1;
 
-        gridVisualisation.SetActive(false);
+        // Deactivate both grid visualizations
+        gridVisualisationTop.SetActive(false);
+        gridVisualisationBottom.SetActive(false);
         cellIndicator.SetActive(false);
-        
-        if(previewObject.tag != "CannotDestroy")
+
+        if (previewObject.tag != "CannotDestroy")
             Destroy(previewObject);
         previewObject = emptyPreviewObject;
         previewObject.SetActive(false);
@@ -153,7 +163,7 @@ public class Placement : MonoBehaviour
 
     void Update()
     {
-        if(selectedObjectIndex < 0)
+        if (selectedObjectIndex < 0)
             return;
 
         Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
@@ -162,10 +172,14 @@ public class Placement : MonoBehaviour
         bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
         cellIndicatorRenderer.material.color = placementValidity ? Color.white : Color.red;
 
-        previewObject.transform.position = grid.CellToWorld(gridPosition + objectOffset);
+        // Calculate the preview object position with the height offset
+        Vector3 previewPosition = grid.CellToWorld(gridPosition + objectOffset);
+        previewPosition.y += placementHeightOffset; // Apply the height offset
+
+        previewObject.transform.position = previewPosition; // Set the position of the preview object
 
         Material materialToChangeTo = placementValidity ? previewObjectMaterialValid : previewObjectMaterialInvalid;
-        foreach(Renderer renderer in previewObjectRenderers)
+        foreach (Renderer renderer in previewObjectRenderers)
         {
             renderer.material = materialToChangeTo;
         }
@@ -174,5 +188,4 @@ public class Placement : MonoBehaviour
         cellIndicator.transform.position = grid.CellToWorld(gridPosition);
     }
 
- 
 }
