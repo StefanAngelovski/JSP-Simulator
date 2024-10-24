@@ -1972,7 +1972,7 @@ MonoBehaviour:
   obstacleDetectionDistance: 3.16
   angleThreshold: 3.6
   rotationSpeed: 4
-  movementThreshold: -15.84
+  movementThreshold: 0.01
 --- !u!4 &1601462229
 Transform:
   m_ObjectHideFlags: 0
