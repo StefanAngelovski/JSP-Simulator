@@ -12,8 +12,8 @@ public class NPCSpawner : MonoBehaviour
     public float moveDistance = 5f;
     public float obstacleDetectionDistance = 1f;
     public float angleThreshold = 30f;
-    public float rotationSpeed = 10f;        // Added to control rotation smoothness
-    public float movementThreshold = 0.1f;   // Added to detect when NPC is actually moving
+    public float rotationSpeed = 10f;       
+    public float movementThreshold = 0.1f;   
 
     private List<GameObject> spawnedNPCs = new List<GameObject>();
 
@@ -31,12 +31,11 @@ public class NPCSpawner : MonoBehaviour
             GameObject npc = Instantiate(npcPrefab, randomPosition, Quaternion.identity);
             spawnedNPCs.Add(npc);
             
-            // Configure NavMeshAgent
             NavMeshAgent agent = npc.GetComponent<NavMeshAgent>();
             if (agent != null)
             {
                 agent.angularSpeed = rotationSpeed;
-                agent.updateRotation = false; // We'll handle rotation manually
+                agent.updateRotation = false; 
             }
             
             StartCoroutine(MoveNPC(npc));
@@ -57,7 +56,6 @@ public class NPCSpawner : MonoBehaviour
                 Random.Range(spawnArea.bounds.min.z, spawnArea.bounds.max.z)
             );
 
-            // Use NavMesh sampling to ensure valid position
             NavMeshHit hit;
             if (NavMesh.SamplePosition(randomPoint, out hit, 1.0f, NavMesh.AllAreas))
             {
@@ -75,21 +73,21 @@ public class NPCSpawner : MonoBehaviour
     {
         NavMeshAgent agent = npc.GetComponent<NavMeshAgent>();
         Animator animator = npc.GetComponent<Animator>();
-        
+
+        // Add a random delay at the start of the coroutine
+        yield return new WaitForSeconds(Random.Range(0f, moveInterval)); 
+
         while (true)
         {
-            // Generate new destination
             Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)).normalized;
             Vector3 newDestination = npc.transform.position + randomDirection * moveDistance;
 
-            // Sample valid NavMesh position for destination
             NavMeshHit hit;
             if (NavMesh.SamplePosition(newDestination, out hit, moveDistance, NavMesh.AllAreas))
             {
                 newDestination = hit.position;
             }
 
-            // Check for obstacles
             if (!DetectObstacle(npc.transform.position, randomDirection))
             {
                 agent.SetDestination(newDestination);
@@ -104,18 +102,14 @@ public class NPCSpawner : MonoBehaviour
                 }
             }
 
-            // Movement and animation loop
             bool wasMoving = false;
             while (!agent.pathStatus.Equals(NavMeshPathStatus.PathComplete) || 
-                   agent.remainingDistance > agent.stoppingDistance)
+                agent.remainingDistance > agent.stoppingDistance)
             {
-                // Check if actually moving
                 bool isMoving = agent.velocity.magnitude > movementThreshold;
                 
-                // Handle rotation only when moving
                 if (isMoving)
                 {
-                    // Calculate desired rotation
                     Vector3 direction = agent.velocity.normalized;
                     if (direction != Vector3.zero)
                     {
@@ -128,7 +122,6 @@ public class NPCSpawner : MonoBehaviour
                     }
                 }
 
-                // Update animation state only when movement state changes
                 if (isMoving != wasMoving && animator != null)
                 {
                     animator.SetBool("IsWalking", isMoving);
@@ -138,15 +131,16 @@ public class NPCSpawner : MonoBehaviour
                 yield return null;
             }
 
-            // Ensure animation is stopped when destination is reached
             if (animator != null && wasMoving)
             {
                 animator.SetBool("IsWalking", false);
             }
 
-            yield return new WaitForSeconds(moveInterval);
+            // Randomize the delay between movements to stagger further
+            yield return new WaitForSeconds(Random.Range(0.5f, moveInterval));
         }
     }
+
 
     private bool DetectObstacle(Vector3 origin, Vector3 direction)
     {

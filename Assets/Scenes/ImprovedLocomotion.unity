@@ -1967,12 +1967,12 @@ MonoBehaviour:
   npcDatabase: {fileID: 11400000, guid: ce977246d6308ff478816e290e9813d1, type: 2}
   npcCount: 5
   spawnArea: {fileID: 483527810}
-  moveInterval: 1
+  moveInterval: 15
   moveDistance: 1
-  obstacleDetectionDistance: 1
-  angleThreshold: 18.62
+  obstacleDetectionDistance: 3.16
+  angleThreshold: 3.6
   rotationSpeed: 4
-  movementThreshold: 0.5
+  movementThreshold: -15.84
 --- !u!4 &1601462229
 Transform:
   m_ObjectHideFlags: 0
