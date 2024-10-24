@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 public class NPCSpawner : MonoBehaviour
 {
-    public NPCDatabase npcDatabase;
+    public ObjectDatabaseSO objectDatabase;  
     public int npcCount = 5;
     public Collider spawnArea;
     public float moveInterval = 2f;
@@ -26,7 +26,8 @@ public class NPCSpawner : MonoBehaviour
     {
         for (int i = 0; i < npcCount; i++)
         {
-            GameObject npcPrefab = npcDatabase.npcPrefabs[Random.Range(0, npcDatabase.npcPrefabs.Count)];
+            ObjectData npcData = objectDatabase.objectsData[Random.Range(0, objectDatabase.objectsData.Count)];
+            GameObject npcPrefab = npcData.Prefab; 
             Vector3 randomPosition = GetRandomPositionInCollider();
             GameObject npc = Instantiate(npcPrefab, randomPosition, Quaternion.identity);
             spawnedNPCs.Add(npc);
@@ -74,7 +75,6 @@ public class NPCSpawner : MonoBehaviour
         NavMeshAgent agent = npc.GetComponent<NavMeshAgent>();
         Animator animator = npc.GetComponent<Animator>();
 
-        // Add a random delay at the start of the coroutine
         yield return new WaitForSeconds(Random.Range(0f, moveInterval)); 
 
         while (true)
@@ -136,11 +136,9 @@ public class NPCSpawner : MonoBehaviour
                 animator.SetBool("IsWalking", false);
             }
 
-            // Randomize the delay between movements to stagger further
             yield return new WaitForSeconds(Random.Range(0.5f, moveInterval));
         }
     }
-
 
     private bool DetectObstacle(Vector3 origin, Vector3 direction)
     {

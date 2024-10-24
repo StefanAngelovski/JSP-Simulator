@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,7 +16,6 @@ public class Placement : MonoBehaviour
     private ObjectDatabaseSO database;
     private int selectedObjectIndex = -1;
 
-    // Two grid visualizations, top and bottom
     [SerializeField]
     private GameObject gridVisualisationTop;
     [SerializeField]
@@ -61,7 +59,6 @@ public class Placement : MonoBehaviour
             return;
         }
 
-        // Activate both grid visualizations
         gridVisualisationTop.SetActive(true);
         gridVisualisationBottom.SetActive(true);
         cellIndicator.SetActive(true);
@@ -124,9 +121,8 @@ public class Placement : MonoBehaviour
 
         GameObject newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
 
-        // Apply the height offset to the Y axis
         Vector3 objectPosition = grid.CellToWorld(placePosition);
-        objectPosition.y += placementHeightOffset; // Add the height offset
+        objectPosition.y += placementHeightOffset;
 
         newObject.transform.position = objectPosition;
         newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
@@ -172,11 +168,10 @@ public class Placement : MonoBehaviour
         bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
         cellIndicatorRenderer.material.color = placementValidity ? Color.white : Color.red;
 
-        // Calculate the preview object position with the height offset
-        Vector3 previewPosition = grid.CellToWorld(gridPosition + objectOffset);
-        previewPosition.y += placementHeightOffset; // Apply the height offset
 
-        previewObject.transform.position = previewPosition; // Set the position of the preview object
+        Vector3 previewPosition = grid.CellToWorld(gridPosition + objectOffset);
+        previewPosition.y += placementHeightOffset; 
+        previewObject.transform.position = previewPosition; 
 
         Material materialToChangeTo = placementValidity ? previewObjectMaterialValid : previewObjectMaterialInvalid;
         foreach (Renderer renderer in previewObjectRenderers)
