@@ -7,7 +7,7 @@ public class Placement : MonoBehaviour
     [SerializeField]
     private GameObject mouseIndicator, cellIndicator;
     private Renderer cellIndicatorRenderer;
-
+    private int score = 0;
     [SerializeField]
     private InputManager inputManager;
     [SerializeField]
@@ -106,49 +106,88 @@ public class Placement : MonoBehaviour
         previewObject.transform.position += grid.CellToWorld(objectOffset);
     }
 
-    private void PlaceStructure()
+ private void PlaceStructure()
+{
+    if (inputManager.IsPointerOverUI())
+        return;
+
+    Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
+    Vector3Int gridPosition = grid.WorldToCell(mousePosition);
+
+    Vector3Int placePosition = gridPosition + objectOffset;
+
+    bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
+
+    if (!placementValidity)
     {
-        if (inputManager.IsPointerOverUI())
-            return;
-
-        Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
-        Vector3Int gridPosition = grid.WorldToCell(mousePosition);
-
-        Vector3Int placePosition = gridPosition + objectOffset;
-
-        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
-
-        if (!placementValidity)
-        {
-            Debug.Log("Invalid Pos");
-            return;
-        }
-
-        GameObject newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
-
-        Vector3 objectPosition = grid.CellToWorld(placePosition);
-        objectPosition.y += placementHeightOffset;
-
-        newObject.transform.position = objectPosition;
-        newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
-        placedGameObjects.Add(newObject);
-
-        gridData.AddObjectAt(gridPosition,
-            rotation,
-            database.objectsData[selectedObjectIndex].Size,
-            database.objectsData[selectedObjectIndex].ID,
-            placedGameObjects.Count - 1);
-
-        // Remove NavMeshAgent component if it exists
-        NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
-        if (navMeshAgent != null)
-        {
-            Destroy(navMeshAgent);  // Programmatically remove the NavMeshAgent
-        }
-
-        // Check if the object is placed over a chair and update its Animator
-        CheckAndSetSitting(newObject, placePosition);
+        Debug.Log("Invalid Pos");
+        return;
     }
+
+    GameObject newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
+
+    Vector3 objectPosition = grid.CellToWorld(placePosition);
+    objectPosition.y += placementHeightOffset;
+
+    newObject.transform.position = objectPosition;
+    newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
+    placedGameObjects.Add(newObject);
+
+    gridData.AddObjectAt(gridPosition,
+        rotation,
+        database.objectsData[selectedObjectIndex].Size,
+        database.objectsData[selectedObjectIndex].ID,
+        placedGameObjects.Count - 1);
+
+    // Remove NavMeshAgent component if it exists
+    NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
+    if (navMeshAgent != null)
+    {
+        Destroy(navMeshAgent);
+    }
+
+    // Check if the object is placed over a chair and update its Animator
+    CheckAndSetSitting(newObject, placePosition);
+
+    // Check for adjacent objects
+    CheckAdjacentObjects(newObject, gridPosition);
+}
+
+
+private void CheckAdjacentObjects(GameObject placedObject, Vector3Int gridPosition)
+{
+    string objectType = database.objectsData[selectedObjectIndex].type;
+
+    // Get neighboring positions (4 directions)
+    Vector3Int[] neighborPositions = new Vector3Int[]
+    {
+        gridPosition + Vector3Int.forward, // North
+        gridPosition + Vector3Int.back,    // South
+        gridPosition + Vector3Int.right,    // East
+        gridPosition + Vector3Int.left      // West
+    };
+
+    foreach (var neighborPos in neighborPositions)
+    {
+        if (gridData.IsObjectAtPosition(neighborPos, out var neighborID))
+        {
+            ObjectData neighborData = database.objectsData.Find(data => data.ID == neighborID);
+            if (neighborData != null)
+            {
+                if (objectType == "elder" && neighborData.type == "kid")
+                {
+                    Debug.Log("Elder is next to a kid!");
+                    // Perform any additional logic here (e.g., score adjustments)
+                }
+                else if (objectType == "kid" && neighborData.type == "elder")
+                {
+                    Debug.Log("Kid is next to an elder!");
+                    // Perform any additional logic here (e.g., score adjustments)
+                }
+            }
+        }
+    }
+}
 
     private void CheckAndSetSitting(GameObject placedObject, Vector3Int gridPosition)
     {
@@ -175,13 +214,67 @@ public class Placement : MonoBehaviour
                 if (animator != null)
                 {
                     animator.SetBool("IsSeated", true);
-                    Debug.Log("Character is sitting!");
+                   // Debug.Log("Character is sitting!");
 
                     // Apply the sitting position offset (which can be adjusted in real time)
                     ApplySittingOffset(placedObject);
+
+
+                    Debug.Log($"Character seated at grid position: {gridPosition}"); 
+
+                    string objectType = database.objectsData[selectedObjectIndex].type;
+                    //ako e pogodeno stolceto dodava 2 a vo sprotiva 1
+                    int x = (int)placedObject.transform.position.x;
+                    int y = (int)placedObject.transform.position.y;
+                    int z = (int)placedObject.transform.position.z;
+                    Debug.Log("x:"+x+" y:"+y+" z:"+z);
+                    if(objectType == "adult"){
+                        //window and back prefered
+                        if((x == 6 && y == 10) || (x == 11 && y == 10) || (x == 6 && y == 7) || (x == 11 && y == 7) || (z <= 26)){
+                            Debug.Log("Prefered Adult");
+                            score += 2;
+                            break;
+                        }
+                        else{
+                            score--;
+                            break;
+                        }
+                    }
+
+                    if(objectType == "elder"){
+                        //aisle and front prefered
+                        if(z >= 29 || (x == 8 && y == 10) || (x == 8 && y == 7)){
+                            Debug.Log("Prefered Elder");
+                            score += 2;
+                            break;
+                        }
+                        else{
+                            score--;
+                            break;
+                        }
+                    }
+
+                    if(objectType == "kid"){
+                        //middle and back lower row
+                        if((y == 10 && z == 28) || (y == 7 && z == 25)){
+                            Debug.Log("Prefered Kid");
+                            score += 2;
+                            break;
+                        }
+                        else{
+                            score--;
+                            break;
+                        }
+                    }
+
                 }
             }
         }
+
+        if(score < 0){
+            score = 0;
+        }
+        Debug.Log(score);
     }
 
     // Method to apply the sitting offset, can be adjusted real-time via the Inspector

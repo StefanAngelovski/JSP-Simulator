@@ -1,99 +1,77 @@
-using System.Collections.Generic;
 using UnityEngine;
 
-public class GridData
+public class GridData : MonoBehaviour
 {
-    Dictionary<Vector3Int, PlacementData> placedObjects = new();
+    // Example grid size and other relevant properties
+    public int gridWidth;
+    public int gridHeight;
+    public GameObject objectPrefab; // Prefab to instantiate
+    private GameObject[,] grid; // 2D array for grid storage
 
-    public void AddObjectAt(Vector3Int gridPosition, int rotation, Vector2Int objectSize, int ID, int placedObjectIndex)
+    void Start()
     {
-        List<Vector3Int> positionToOccupy = CalculatePositions(gridPosition, objectSize, rotation);
-        PlacementData data = new PlacementData(positionToOccupy, ID, placedObjectIndex); //Add rotation property to store rotation to delet appropriate cells when removing object
-        foreach (var pos in positionToOccupy)
-        {
-            if(placedObjects.ContainsKey(pos))
-            {
-                Debug.Log($"ERROR: Dictionary already contains this cell position {pos}");
-                return;
-            }
-            placedObjects[pos] = data;
-        }
+        InitializeGrid();
     }
 
-    private List<Vector3Int> CalculatePositions(Vector3Int gridPosition, Vector2Int objectSize, int rotation)
+    private void InitializeGrid()
     {
-        List<Vector3Int> returnVal = new();
+        grid = new GameObject[gridWidth, gridHeight];
+    }
 
-        //rotation = 0
-        if(rotation == 0){
-            for (int x = 0; x < objectSize.x; x++)
-            {
-                for (int y = 0; y < objectSize.y; y++)
-                {
-                    returnVal.Add(gridPosition + new Vector3Int(x, 0, y));
-                }
-            }
-        }
+    public bool TryPlaceObject(Vector3 position, out int objectID)
+    {
+        // Convert the position to grid coordinates
+        Vector2Int gridPosition = WorldToGrid(position);
         
-        //rotation = 1
-        if(rotation == 1)
+        // Check if the position is within the grid boundaries
+        if (IsValidPosition(gridPosition))
         {
-            for (int y = -(objectSize.x - 1); y <= 0; y++)
+            // Check if there's already an object in the grid cell
+            if (grid[gridPosition.x, gridPosition.y] == null)
             {
-                for (int x = 0; x < objectSize.y; x++)
-                {
-                    returnVal.Add(gridPosition + new Vector3Int(x, 0, y));
-                }
+                // Place the object and assign its ID
+                GameObject newObject = Instantiate(objectPrefab, position, Quaternion.identity);
+                grid[gridPosition.x, gridPosition.y] = newObject;
+                
+                // Assuming we can generate an ID from the instance ID
+                objectID = newObject.GetInstanceID(); // or a custom ID assignment method
+                return true; // Successfully placed the object
+            }
+            else
+            {
+                // If there is already an object, set objectID to indicate failure
+                objectID = -1; // Indicate failure due to existing object
+                return false; // Indicate failure to place object
             }
         }
-
-        //rotation = 2
-        if(rotation == 2){
-            for (int x = -(objectSize.x - 1); x <= 0; x++)
-            {
-                for (int y = -(objectSize.y - 1); y <= 0; y++)
-                {
-                    returnVal.Add(gridPosition + new Vector3Int(x, 0, y));
-                }
-            }
+        else
+        {
+            // Assign a default value when the placement fails
+            objectID = -1; // Default or error value
+            return false; // Indicate failure to place object
         }
-
-        //rotation 3
-        if(rotation == 3){
-            for (int y = 0; y < objectSize.x; y++)
-            {
-                for (int x = -(objectSize.y - 1); x <= 0; x++)
-                {
-                    returnVal.Add(gridPosition + new Vector3Int(x, 0, y));
-                }
-            }
-        }
-
-        return returnVal;
     }
 
-    public bool CanPlaceObjectAt(Vector3Int gridPosition, Vector2Int objectSize, int rotation)
+    private bool IsValidPosition(Vector2Int position)
     {
-        List<Vector3Int> positionToOccupy = CalculatePositions(gridPosition, objectSize, rotation);
-        foreach (var pos in positionToOccupy)
-        {
-            if (placedObjects.ContainsKey(pos))
-                return false;
-        }
-        return true;
+        return position.x >= 0 && position.x < gridWidth && position.y >= 0 && position.y < gridHeight;
     }
-}
 
-public class PlacementData
-{
-    public List<Vector3Int> occupiedPositions;
-    public int ID { get; private set; }
-    public int PlacedObjectIndex { get; private set; }
-
-    public PlacementData(List<Vector3Int> occupiedPositions, int iD, int placedObjectIndex)
+    private Vector2Int WorldToGrid(Vector3 worldPosition)
     {
-        this.occupiedPositions = occupiedPositions;
-        ID = iD;
-        PlacedObjectIndex = placedObjectIndex;
+        // Convert world position to grid coordinates (assuming a simple scaling for this example)
+        int x = Mathf.FloorToInt(worldPosition.x);
+        int y = Mathf.FloorToInt(worldPosition.z); // Assuming a 2D plane on XZ
+        return new Vector2Int(x, y);
+    }
+
+    // Optional: Add a method to clear a specific object
+    public void ClearObject(Vector2Int gridPosition)
+    {
+        if (IsValidPosition(gridPosition) && grid[gridPosition.x, gridPosition.y] != null)
+        {
+            Destroy(grid[gridPosition.x, gridPosition.y]);
+            grid[gridPosition.x, gridPosition.y] = null;
+        }
     }
 }
