@@ -9,6 +9,7 @@ TagManager:
   - Grid
   - CannotDestroy
   - Character
+  - Chair
   layers:
   - Default
   - TransparentFX

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Placement : MonoBehaviour
 {
@@ -35,8 +36,14 @@ public class Placement : MonoBehaviour
     [SerializeField]
     private Material previewObjectMaterialInvalid;
 
+    // Sitting position offset, adjustable in the Unity Inspector
+    [SerializeField]
+    private Vector3 sittingPositionOffset = new Vector3(0, 0, 0);
+
     private int rotation = 0;
     private Vector3Int objectOffset;
+
+    private float placementHeightOffset = 0.1f;
 
     private void Start()
     {
@@ -99,8 +106,6 @@ public class Placement : MonoBehaviour
         previewObject.transform.position += grid.CellToWorld(objectOffset);
     }
 
-    private float placementHeightOffset = 0.1f; 
-
     private void PlaceStructure()
     {
         if (inputManager.IsPointerOverUI())
@@ -133,6 +138,56 @@ public class Placement : MonoBehaviour
             database.objectsData[selectedObjectIndex].Size,
             database.objectsData[selectedObjectIndex].ID,
             placedGameObjects.Count - 1);
+
+        // Remove NavMeshAgent component if it exists
+        NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
+        if (navMeshAgent != null)
+        {
+            Destroy(navMeshAgent);  // Programmatically remove the NavMeshAgent
+        }
+
+        // Check if the object is placed over a chair and update its Animator
+        CheckAndSetSitting(newObject, placePosition);
+    }
+
+    private void CheckAndSetSitting(GameObject placedObject, Vector3Int gridPosition)
+    {
+        // Create a box to check for chairs in the vicinity of the placed object.
+        Vector3 center = grid.CellToWorld(gridPosition);
+        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f);  // Adjust size based on your grid cell size and object size
+
+        // Assume chairs have a tag "Chair"
+        Collider[] hitColliders = Physics.OverlapBox(center, halfExtents);
+        foreach (var collider in hitColliders)
+        {
+            if (collider.CompareTag("Chair"))
+            {
+                Debug.Log("Chair detected underneath!");
+
+                // Center the object on the grid
+                Vector3 gridCenter = grid.CellToWorld(gridPosition);
+                gridCenter.y = placedObject.transform.position.y; // Keep current Y position
+
+                placedObject.transform.position = gridCenter;
+
+                // Find the Animator in the placed object and set IsSeated to true
+                Animator animator = placedObject.GetComponent<Animator>();
+                if (animator != null)
+                {
+                    animator.SetBool("IsSeated", true);
+                    Debug.Log("Character is sitting!");
+
+                    // Apply the sitting position offset (which can be adjusted in real time)
+                    ApplySittingOffset(placedObject);
+                }
+            }
+        }
+    }
+
+    // Method to apply the sitting offset, can be adjusted real-time via the Inspector
+    private void ApplySittingOffset(GameObject placedObject)
+    {
+        placedObject.transform.position += sittingPositionOffset;
     }
 
     private void StopPlacement()
@@ -168,10 +223,9 @@ public class Placement : MonoBehaviour
         bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
         cellIndicatorRenderer.material.color = placementValidity ? Color.white : Color.red;
 
-
         Vector3 previewPosition = grid.CellToWorld(gridPosition + objectOffset);
-        previewPosition.y += placementHeightOffset; 
-        previewObject.transform.position = previewPosition; 
+        previewPosition.y += placementHeightOffset;
+        previewObject.transform.position = previewPosition;
 
         Material materialToChangeTo = placementValidity ? previewObjectMaterialValid : previewObjectMaterialInvalid;
         foreach (Renderer renderer in previewObjectRenderers)
@@ -179,8 +233,28 @@ public class Placement : MonoBehaviour
             renderer.material = materialToChangeTo;
         }
 
+        // Adjust cellIndicator position slightly above the grid
+        Vector3 cellIndicatorPosition = grid.CellToWorld(gridPosition);
+        cellIndicatorPosition.y += 0.1f; // Raise it by 0.2 units on the Y-axis
+        cellIndicator.transform.position = cellIndicatorPosition;
+
         mouseIndicator.transform.position = mousePosition;
-        cellIndicator.transform.position = grid.CellToWorld(gridPosition);
     }
 
+
+    // Optional: To apply offset in real-time while the game is running
+    private void OnValidate()
+    {
+        if (Application.isPlaying)
+        {
+            // Update the sitting position offset in real-time if changes occur in the inspector
+            foreach (var placedObject in placedGameObjects)
+            {
+                if (placedObject != null && placedObject.GetComponent<Animator>()?.GetBool("IsSeated") == true)
+                {
+                    ApplySittingOffset(placedObject);
+                }
+            }
+        }
+    }
 }
