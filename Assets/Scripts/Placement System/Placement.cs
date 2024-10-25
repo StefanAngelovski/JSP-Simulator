@@ -106,88 +106,50 @@ public class Placement : MonoBehaviour
         previewObject.transform.position += grid.CellToWorld(objectOffset);
     }
 
- private void PlaceStructure()
-{
-    if (inputManager.IsPointerOverUI())
-        return;
-
-    Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
-    Vector3Int gridPosition = grid.WorldToCell(mousePosition);
-
-    Vector3Int placePosition = gridPosition + objectOffset;
-
-    bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
-
-    if (!placementValidity)
+    private void PlaceStructure()
     {
-        Debug.Log("Invalid Pos");
-        return;
-    }
+        if (inputManager.IsPointerOverUI())
+            return;
 
-    GameObject newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
+        Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
+        Vector3Int gridPosition = grid.WorldToCell(mousePosition);
 
-    Vector3 objectPosition = grid.CellToWorld(placePosition);
-    objectPosition.y += placementHeightOffset;
+        Vector3Int placePosition = gridPosition + objectOffset;
 
-    newObject.transform.position = objectPosition;
-    newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
-    placedGameObjects.Add(newObject);
+        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
 
-    gridData.AddObjectAt(gridPosition,
-        rotation,
-        database.objectsData[selectedObjectIndex].Size,
-        database.objectsData[selectedObjectIndex].ID,
-        placedGameObjects.Count - 1);
-
-    // Remove NavMeshAgent component if it exists
-    NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
-    if (navMeshAgent != null)
-    {
-        Destroy(navMeshAgent);
-    }
-
-    // Check if the object is placed over a chair and update its Animator
-    CheckAndSetSitting(newObject, placePosition);
-
-    // Check for adjacent objects
-    CheckAdjacentObjects(newObject, gridPosition);
-}
-
-
-private void CheckAdjacentObjects(GameObject placedObject, Vector3Int gridPosition)
-{
-    string objectType = database.objectsData[selectedObjectIndex].type;
-
-    // Get neighboring positions (4 directions)
-    Vector3Int[] neighborPositions = new Vector3Int[]
-    {
-        gridPosition + Vector3Int.forward, // North
-        gridPosition + Vector3Int.back,    // South
-        gridPosition + Vector3Int.right,    // East
-        gridPosition + Vector3Int.left      // West
-    };
-
-    foreach (var neighborPos in neighborPositions)
-    {
-        if (gridData.IsObjectAtPosition(neighborPos, out var neighborID))
+        if (!placementValidity)
         {
-            ObjectData neighborData = database.objectsData.Find(data => data.ID == neighborID);
-            if (neighborData != null)
-            {
-                if (objectType == "elder" && neighborData.type == "kid")
-                {
-                    Debug.Log("Elder is next to a kid!");
-                    // Perform any additional logic here (e.g., score adjustments)
-                }
-                else if (objectType == "kid" && neighborData.type == "elder")
-                {
-                    Debug.Log("Kid is next to an elder!");
-                    // Perform any additional logic here (e.g., score adjustments)
-                }
-            }
+            Debug.Log("Invalid Pos");
+            return;
         }
+
+        GameObject newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
+
+        Vector3 objectPosition = grid.CellToWorld(placePosition);
+        objectPosition.y += placementHeightOffset;
+
+        newObject.transform.position = objectPosition;
+        newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
+        placedGameObjects.Add(newObject);
+
+        gridData.AddObjectAt(gridPosition,
+            rotation,
+            database.objectsData[selectedObjectIndex].Size,
+            database.objectsData[selectedObjectIndex].ID,
+            placedGameObjects.Count - 1);
+
+        // Remove NavMeshAgent component if it exists
+        NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
+        if (navMeshAgent != null)
+        {
+            Destroy(navMeshAgent);  // Programmatically remove the NavMeshAgent
+        }
+
+        // Check if the object is placed over a chair and update its Animator
+        CheckAndSetSitting(newObject, placePosition);
     }
-}
+
 
     private void CheckAndSetSitting(GameObject placedObject, Vector3Int gridPosition)
     {
