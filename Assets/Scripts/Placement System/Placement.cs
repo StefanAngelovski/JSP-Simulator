@@ -7,7 +7,6 @@ public class Placement : MonoBehaviour
     [SerializeField]
     private GameObject mouseIndicator, cellIndicator;
     private Renderer cellIndicatorRenderer;
-    private int score = 0;
     [SerializeField]
     private InputManager inputManager;
     [SerializeField]
@@ -163,7 +162,7 @@ public class Placement : MonoBehaviour
         {
             if (collider.CompareTag("Chair"))
             {
-                Debug.Log("Chair detected underneath!");
+              //  Debug.Log("Chair detected underneath!");
 
                 // Center the object on the grid
                 Vector3 gridCenter = grid.CellToWorld(gridPosition);
@@ -181,62 +180,19 @@ public class Placement : MonoBehaviour
                     // Apply the sitting position offset (which can be adjusted in real time)
                     ApplySittingOffset(placedObject);
 
+                    
+                    GridCollisionDetection gridCollisionDetection = FindObjectOfType<GridCollisionDetection>();
+                        if (gridCollisionDetection != null)
+                        {
+                            gridCollisionDetection.OnCharacterSeated(database.objectsData[selectedObjectIndex], placedObject.transform.position);
+                            break;
+                        }
 
-                    Debug.Log($"Character seated at grid position: {gridPosition}"); 
 
-                    string objectType = database.objectsData[selectedObjectIndex].type;
-                    //ako e pogodeno stolceto dodava 2 a vo sprotiva 1
-                    int x = (int)placedObject.transform.position.x;
-                    int y = (int)placedObject.transform.position.y;
-                    int z = (int)placedObject.transform.position.z;
-                    Debug.Log("x:"+x+" y:"+y+" z:"+z);
-                    if(objectType == "adult"){
-                        //window and back prefered
-                        if((x == 6 && y == 10) || (x == 11 && y == 10) || (x == 6 && y == 7) || (x == 11 && y == 7) || (z <= 26)){
-                            Debug.Log("Prefered Adult");
-                            score += 2;
-                            break;
-                        }
-                        else{
-                            score--;
-                            break;
-                        }
-                    }
-
-                    if(objectType == "elder"){
-                        //aisle and front prefered
-                        if(z >= 29 || (x == 8 && y == 10) || (x == 8 && y == 7)){
-                            Debug.Log("Prefered Elder");
-                            score += 2;
-                            break;
-                        }
-                        else{
-                            score--;
-                            break;
-                        }
-                    }
-
-                    if(objectType == "kid"){
-                        //middle and back lower row
-                        if((y == 10 && z == 28) || (y == 7 && z == 25)){
-                            Debug.Log("Prefered Kid");
-                            score += 2;
-                            break;
-                        }
-                        else{
-                            score--;
-                            break;
-                        }
-                    }
 
                 }
             }
         }
-
-        if(score < 0){
-            score = 0;
-        }
-        Debug.Log(score);
     }
 
     // Method to apply the sitting offset, can be adjusted real-time via the Inspector
