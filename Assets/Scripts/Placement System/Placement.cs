@@ -184,7 +184,7 @@ public class Placement : MonoBehaviour
                     GridCollisionDetection gridCollisionDetection = FindObjectOfType<GridCollisionDetection>();
                         if (gridCollisionDetection != null)
                         {
-                            gridCollisionDetection.OnCharacterSeated(database.objectsData[selectedObjectIndex], placedObject.transform.position);
+                            gridCollisionDetection.OnCharacterSeated(database.objectsData[selectedObjectIndex],placedObject , placedObject.transform.position);
                             break;
                         }
 

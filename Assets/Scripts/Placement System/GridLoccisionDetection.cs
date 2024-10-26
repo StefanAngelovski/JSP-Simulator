@@ -1,17 +1,22 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class GridCollisionDetection : MonoBehaviour
 {
     public GameObject grid1;
     public GameObject grid2;
     public float detectionRadius = 0.5f;
-    private int counter = 0;
-
-    private List<(ObjectData SeatedObject, Vector3Int Position)> seatedObjects = new List<(ObjectData, Vector3Int)>();
+    public TextMeshProUGUI scoreText;
+    public GameObject gameOverPanel;
+    private int score = 0;
+    private GameObject objectToRelocate;
+    private List<(ObjectData SeatedObject, GameObject ObjectGameObject, Vector3Int Position)> seatedObjects = new List<(ObjectData, GameObject, Vector3Int)>();
 
     public void Start()
     {
+        gameOverPanel.SetActive(false);
         Vector3Int grid1PositionInt = GetIntegerPosition(grid1.transform.position);
         Vector3Int grid2PositionInt = GetIntegerPosition(grid2.transform.position);
 
@@ -19,30 +24,79 @@ public class GridCollisionDetection : MonoBehaviour
         Debug.Log("Grid2 integer position: " + grid2PositionInt);
     }
 
-    public void OnCharacterSeated(ObjectData seatedObject, Vector3 position)
+    public void OnCharacterSeated(ObjectData seatedObject, GameObject objectGameObject, Vector3 position)
     {
         Vector3Int objectPositionInt = GetIntegerPosition(position);
-        seatedObjects.Add((seatedObject, objectPositionInt));
+        seatedObjects.Add((seatedObject, objectGameObject, objectPositionInt));
 
         CheckPosition(seatedObject, objectPositionInt);
-        // Check neighbors for the newly seated object
-        CheckForNeighbors(seatedObject, objectPositionInt);
+        
+        CheckForNeighbors(seatedObject, objectGameObject, objectPositionInt);
 
-        Debug.Log("Position of object (integer): " + objectPositionInt);
-    }
-
-
-    private void CheckPosition(ObjectData newObject, Vector3 newPosition){
-        Debug.Log(newObject.type);
-        if(newObject.type == "adult"){
-            if((newPosition.x == 7 && newPosition.y == 10) || (newPosition.x == 12 && newPosition.y == 10) || (newPosition.x == 6 && newPosition.y == 7) || (newPosition.x == 11 && newPosition.y == 7) || (newPosition.z <= 26))
-                {
-                    Debug.Log("Adult placed on the right spot");
-                }
+        if(score < 0){
+            score = 0;
         }
+        Debug.Log("Position of object (integer): " + objectPositionInt);
+        Debug.Log("score is:"+ score);
     }
 
-    private void CheckForNeighbors(ObjectData newObject, Vector3Int newPosition)
+    private void CheckPosition(ObjectData newObject, Vector3Int newPosition)
+    {
+        //prefered position window and back?
+        if (newObject.type == "adult")
+        {
+            if ((newPosition.x == 7 && newPosition.y == 10) ||
+                (newPosition.x == 12 && newPosition.y == 10) ||
+                (newPosition.x == 7 && newPosition.y == 8) ||
+                (newPosition.x == 12 && newPosition.y == 8) ||
+                (newPosition.z <= 26))
+            {
+                score += 10;
+                Debug.Log("Adult placed on the right spot.");
+            }
+        }
+
+        //prefered position front and aisle
+        if(newObject.type == "elder"){
+            if((newPosition.z >= 29) ||
+               (newPosition.x == 9 && newPosition.y == 10) ||
+               (newPosition.x == 9 && newPosition.y == 8)){
+                score += 10;
+                Debug.Log("Elder placed on the right spot");
+               }
+        }
+
+        //prefered middle and back
+        if(newObject.type == "kid" || newObject.type == "student"){
+            if((newPosition.y == 10 && newPosition.z == 28) ||
+               (newPosition.y == 8 && newPosition.z == 28) ||
+               (newPosition.z <= 26))
+               {
+                score += 10;
+                Debug.Log("Kid placed on the right spot");
+               }
+        }
+
+        if(newObject.type == "police"){
+            if(newPosition.z <= 26){
+                score += 10;
+            }
+        }
+
+        if(newObject.type == "celebrity"){
+                Debug.Log("Celebrity object detected with position: " + newPosition);
+            if(newPosition.z >= 30 || newPosition.z <= 26){
+                GameOver(score);
+            }
+
+            else{
+                score += 50;
+            }
+        }
+        
+    }
+
+    private void CheckForNeighbors(ObjectData newObject, GameObject newObjectGameObject, Vector3Int newPosition)
     {
         Vector3Int[] directions = {
             Vector3Int.left,   // Left
@@ -51,18 +105,69 @@ public class GridCollisionDetection : MonoBehaviour
             Vector3Int.forward // Upfront
         };
 
+        List<(ObjectData, GameObject, Vector3Int)> neighborsToRemove = new List<(ObjectData, GameObject, Vector3Int)>();
+
         foreach (var direction in directions)
         {
             Vector3Int neighborPosition = newPosition + direction;
 
-            // Check each object in seatedObjects to see if it's in the neighbor position
             foreach (var existingObject in seatedObjects)
             {
                 if (existingObject.Position == neighborPosition)
                 {
-                    Debug.Log($"The object {newObject.Name} has a neighbor {existingObject.SeatedObject.Name} of type {existingObject.SeatedObject.type} at {direction} position.");
+                    //if you place an elder next to a kid
+                    if (existingObject.SeatedObject.type == "kid" && newObject.type == "elder")
+                    {
+                        Debug.Log("elder next to kid");
+                        score += 10; 
+                    }
+                    
+                    //if you place two elders next to eachother
+                    else if(existingObject.SeatedObject.type == "elder" && newObject.type == "elder"){
+                        score += 20;
+                    }
+
+                    //if you place an elder next to police
+                    else if(existingObject.SeatedObject.type == "police" && newObject.type == "elder"){
+                        Debug.Log("kid placed next to elder");
+                        StartTimer(newObjectGameObject, 0);
+                        score += 10;
+                    }
+
+                    //if you place a kid next to an elder (wait for the kid to change seats and dedact the score)
+                    else if(existingObject.SeatedObject.type == "elder" && newObject.type == "kid"){
+                        Debug.Log("kid placed next to elder");
+                        StartTimer(newObjectGameObject, 0);
+                        score += 10;
+                    }
+
+                    //if you place two adults next to eachother
+                    else if(existingObject.SeatedObject.type == "adult" && newObject.type == "adult"){
+                        score += 20;
+                    }
+
+                    //if you place a police next to a kid (kid leaves the bus)
+                    else if(existingObject.SeatedObject.type == "kid" && newObject.type == "police")
+                    {
+                        Destroy(newObjectGameObject); 
+                        neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
+                        score -= 50;
+                    }
+
+                    //if you place a police next to a student (replace the location for the student)
+                    else if(existingObject.SeatedObject.type == "student" && newObject.type == "police")
+                    {
+                        Debug.Log("police next to student");
+                        StartTimer(existingObject.ObjectGameObject ,0);
+                        score -= 20;
+                    }
                 }
             }
+        }
+
+        foreach (var neighbor in neighborsToRemove)
+        {
+            seatedObjects.Remove(neighbor);
         }
     }
 
@@ -74,31 +179,39 @@ public class GridCollisionDetection : MonoBehaviour
             Mathf.RoundToInt(position.z)
         );
     }
+
+private void StartTimer(GameObject existingObject, int timer)
+    {
+        objectToRelocate = existingObject; 
+        Invoke(nameof(RelocateStoredObject), timer); 
+    }
+
+    private void RelocateStoredObject()
+    {
+        if (objectToRelocate != null)
+        {
+            Vector3Int newPosition = GetRandomPositionWithinGrid();
+            objectToRelocate.transform.position = newPosition;
+            Debug.Log($"Object {objectToRelocate.name} relocated to {newPosition}");
+        }
+    }
+
+    private Vector3Int GetRandomPositionWithinGrid()
+    {
+        GameObject selectedGrid = Random.value > 0.5f ? grid1 : grid2;
+        Renderer gridRenderer = selectedGrid.GetComponent<Renderer>();
+        Bounds gridBounds = gridRenderer.bounds;
+
+        int x = Mathf.RoundToInt(Random.Range(gridBounds.min.x, gridBounds.max.x));
+        int y = Mathf.RoundToInt(Random.Range(gridBounds.min.y, gridBounds.max.y));
+        int z = Mathf.RoundToInt(Random.Range(gridBounds.min.z, gridBounds.max.z));
+
+        return new Vector3Int(x, y, z);
+    }
+
+    private void GameOver(int score){
+        scoreText.text = "Score: " + score.ToString();
+        Time.timeScale = 0;
+        gameOverPanel.SetActive(true);
+    }
 }
-
-
-                    // if(objectType == "elder"){
-                    //     //aisle and front prefered
-                    //     if(z >= 29 || (x == 8 && y == 10) || (x == 8 && y == 7)){
-                    //         Debug.Log("Prefered Elder");
-                    //         score += 2;
-                    //         break;
-                    //     }
-                    //     else{
-                    //         score--;
-                    //         break;
-                    //     }
-                    // }
-
-                    // if(objectType == "kid"){
-                    //     //middle and back lower row
-                    //     if((y == 10 && z == 28) || (y == 7 && z == 25)){
-                    //         Debug.Log("Prefered Kid");
-                    //         score += 2;
-                    //         break;
-                    //     }
-                    //     else{
-                    //         score--;
-                    //         break;
-                    //     }
-                    // }

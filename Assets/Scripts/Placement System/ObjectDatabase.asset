@@ -22,7 +22,7 @@ MonoBehaviour:
     <ID>k__BackingField: 1
     <Size>k__BackingField: {x: 1, y: 1}
     <Prefab>k__BackingField: {fileID: 5431878859830176315, guid: 1eb20bdb7be737941a823e9a45860650, type: 3}
-    <type>k__BackingField: adult
+    <type>k__BackingField: celebrity
   - <Name>k__BackingField: Lady2
     <ID>k__BackingField: 2
     <Size>k__BackingField: {x: 1, y: 1}
@@ -32,7 +32,7 @@ MonoBehaviour:
     <ID>k__BackingField: 3
     <Size>k__BackingField: {x: 1, y: 1}
     <Prefab>k__BackingField: {fileID: 740091701420131850, guid: 3e898e5bdc58dd3429a919c19e084e92, type: 3}
-    <type>k__BackingField: adult
+    <type>k__BackingField: celebrity
   - <Name>k__BackingField: Kid
     <ID>k__BackingField: 4
     <Size>k__BackingField: {x: 1, y: 1}
@@ -42,9 +42,9 @@ MonoBehaviour:
     <ID>k__BackingField: 5
     <Size>k__BackingField: {x: 1, y: 1}
     <Prefab>k__BackingField: {fileID: 5245900261919092037, guid: 584407b262e887c478d6cab5c5fd6f6f, type: 3}
-    <type>k__BackingField: adult
+    <type>k__BackingField: police
   - <Name>k__BackingField: Student
     <ID>k__BackingField: 6
     <Size>k__BackingField: {x: 1, y: 1}
     <Prefab>k__BackingField: {fileID: 449715033663550538, guid: d5cac0fba12df2e42bed4c97d6d5e868, type: 3}
-    <type>k__BackingField: kid
+    <type>k__BackingField: student
