@@ -138,25 +138,21 @@ public class Placement : MonoBehaviour
             database.objectsData[selectedObjectIndex].ID,
             placedGameObjects.Count - 1);
 
-        // Remove NavMeshAgent component if it exists
         NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
         if (navMeshAgent != null)
         {
-            Destroy(navMeshAgent);  // Programmatically remove the NavMeshAgent
+            Destroy(navMeshAgent); 
         }
 
-        // Check if the object is placed over a chair and update its Animator
         CheckAndSetSitting(newObject, placePosition);
     }
 
 
     private void CheckAndSetSitting(GameObject placedObject, Vector3Int gridPosition)
     {
-        // Create a box to check for chairs in the vicinity of the placed object.
         Vector3 center = grid.CellToWorld(gridPosition);
-        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f);  // Adjust size based on your grid cell size and object size
+        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f); 
 
-        // Assume chairs have a tag "Chair"
         Collider[] hitColliders = Physics.OverlapBox(center, halfExtents);
         foreach (var collider in hitColliders)
         {
@@ -229,6 +225,14 @@ public class Placement : MonoBehaviour
         previewPosition.y += placementHeightOffset;
         previewObject.transform.position = previewPosition;
 
+        // Check if the preview object is over a chair and set animation accordingly
+        bool isOverChair = CheckPreviewOverChair(gridPosition);
+        Animator previewAnimator = previewObject.GetComponent<Animator>();
+        if (previewAnimator != null)
+        {
+            previewAnimator.SetBool("IsSeated", isOverChair);
+        }
+
         Material materialToChangeTo = placementValidity ? previewObjectMaterialValid : previewObjectMaterialInvalid;
         foreach (Renderer renderer in previewObjectRenderers)
         {
@@ -237,9 +241,27 @@ public class Placement : MonoBehaviour
 
         // Adjust cellIndicator position slightly above the grid
         Vector3 cellIndicatorPosition = grid.CellToWorld(gridPosition);
-        cellIndicatorPosition.y += 0.1f; 
+        cellIndicatorPosition.y += 0.1f;
         cellIndicator.transform.position = cellIndicatorPosition;
 
         mouseIndicator.transform.position = mousePosition;
     }
+
+
+    private bool CheckPreviewOverChair(Vector3Int gridPosition)
+    {
+        Vector3 center = grid.CellToWorld(gridPosition);
+        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f);
+
+        Collider[] hitColliders = Physics.OverlapBox(center, halfExtents);
+        foreach (var collider in hitColliders)
+        {
+            if (collider.CompareTag("Chair"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
