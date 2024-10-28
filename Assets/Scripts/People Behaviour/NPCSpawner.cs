@@ -58,7 +58,7 @@ public class NPCSpawner : MonoBehaviour
             );
 
             NavMeshHit hit;
-            if (NavMesh.SamplePosition(randomPoint, out hit, 1.0f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(randomPoint, out hit, 3.0f, NavMesh.AllAreas))
             {
                 randomPosition = hit.position;
                 positionFound = true;
