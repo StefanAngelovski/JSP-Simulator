@@ -162,22 +162,15 @@ public class Placement : MonoBehaviour
         {
             if (collider.CompareTag("Chair"))
             {
-              //  Debug.Log("Chair detected underneath!");
-
-                // Center the object on the grid
                 Vector3 gridCenter = grid.CellToWorld(gridPosition);
                 gridCenter.y = placedObject.transform.position.y; // Keep current Y position
 
                 placedObject.transform.position = gridCenter;
 
-                // Find the Animator in the placed object and set IsSeated to true
                 Animator animator = placedObject.GetComponent<Animator>();
                 if (animator != null)
                 {
                     animator.SetBool("IsSeated", true);
-                   // Debug.Log("Character is sitting!");
-
-                    // Apply the sitting position offset (which can be adjusted in real time)
                     ApplySittingOffset(placedObject);
 
                     
@@ -195,7 +188,6 @@ public class Placement : MonoBehaviour
         }
     }
 
-    // Method to apply the sitting offset, can be adjusted real-time via the Inspector
     private void ApplySittingOffset(GameObject placedObject)
     {
         placedObject.transform.position += sittingPositionOffset;
@@ -205,7 +197,6 @@ public class Placement : MonoBehaviour
     {
         selectedObjectIndex = -1;
 
-        // Deactivate both grid visualizations
         gridVisualisationTop.SetActive(false);
         gridVisualisationBottom.SetActive(false);
         cellIndicator.SetActive(false);
@@ -246,26 +237,9 @@ public class Placement : MonoBehaviour
 
         // Adjust cellIndicator position slightly above the grid
         Vector3 cellIndicatorPosition = grid.CellToWorld(gridPosition);
-        cellIndicatorPosition.y += 0.1f; // Raise it by 0.2 units on the Y-axis
+        cellIndicatorPosition.y += 0.1f; 
         cellIndicator.transform.position = cellIndicatorPosition;
 
         mouseIndicator.transform.position = mousePosition;
-    }
-
-
-    // Optional: To apply offset in real-time while the game is running
-    private void OnValidate()
-    {
-        if (Application.isPlaying)
-        {
-            // Update the sitting position offset in real-time if changes occur in the inspector
-            foreach (var placedObject in placedGameObjects)
-            {
-                if (placedObject != null && placedObject.GetComponent<Animator>()?.GetBool("IsSeated") == true)
-                {
-                    ApplySittingOffset(placedObject);
-                }
-            }
-        }
     }
 }
