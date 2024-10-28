@@ -181,7 +181,7 @@ public class Placement : MonoBehaviour
                     ApplySittingOffset(placedObject);
 
                     
-                    GridCollisionDetection gridCollisionDetection = FindObjectOfType<GridCollisionDetection>();
+                    GridCollisionDetection gridCollisionDetection = FindFirstObjectByType<GridCollisionDetection>();
                         if (gridCollisionDetection != null)
                         {
                             gridCollisionDetection.OnCharacterSeated(database.objectsData[selectedObjectIndex],placedObject , placedObject.transform.position);

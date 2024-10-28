@@ -18,10 +18,7 @@ public class NPCPathfinding : MonoBehaviour
 
     void Update()
     {
-        // Set the destination of the NavMeshAgent
         navMeshAgent.destination = movePositionTransform.position;
-        
-        // Check the speed of the NavMeshAgent
         float speed = navMeshAgent.velocity.magnitude;
 
         // Set the IsWalking parameter based on the speed threshold
