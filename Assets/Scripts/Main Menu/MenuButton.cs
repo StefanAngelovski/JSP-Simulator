@@ -3,13 +3,15 @@ using UnityEngine.SceneManagement;
 
 public class MenuButton : MonoBehaviour
 {
-    [SerializeField] MenuButtonController menuButtonController;
-    [SerializeField] Animator animator;
-    [SerializeField] AnimatorFunctions animatorFunctions;
-    [SerializeField] int thisIndex;
-    [SerializeField] string sceneToLoad;
-    [SerializeField] bool isQuitButton;
-
+    [SerializeField] private MenuButtonController menuButtonController;
+    [SerializeField] private Animator animator;
+    [SerializeField] private AnimatorFunctions animatorFunctions;
+    [SerializeField] private int thisIndex;
+    [SerializeField] private GameObject currentGameObject;
+    [SerializeField] private GameObject nextGameObject;
+    [SerializeField] private string sceneToLoad;
+    [SerializeField] private bool isQuitButton;
+    [SerializeField] private bool isExtras;
     void Update()
     {
         if (menuButtonController.index == thisIndex)
@@ -19,14 +21,17 @@ public class MenuButton : MonoBehaviour
             if (Input.GetAxis("Submit") == 1)
             {
                 animator.SetBool("pressed", true);
-                
+
+
                 if (isQuitButton)
                 {
                     QuitGame();
                 }
-                else if (!string.IsNullOrEmpty(sceneToLoad))
+                else if (isExtras)
                 {
-                    LoadScene(); 
+                    currentGameObject.SetActive(false);
+                    nextGameObject.SetActive(true);
+
                 }
             }
             else if (animator.GetBool("pressed"))
@@ -37,7 +42,8 @@ public class MenuButton : MonoBehaviour
         }
         else
         {
-            animator.SetBool("selected", false);
+            animator.SetBool("selected",
+ false);
         }
     }
 
@@ -48,10 +54,21 @@ public class MenuButton : MonoBehaviour
 
     public void QuitGame()
     {
+
+        // If we're running in the editor, stop playing
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        // Otherwise, quit the application
+        Application.Quit();
+#endif
+
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
         #else
             Application.Quit();
         #endif
+
     }
+
 }
