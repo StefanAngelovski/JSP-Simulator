@@ -44,6 +44,9 @@ public class Placement : MonoBehaviour
 
     private float placementHeightOffset = 0.1f;
 
+    private PeopleCounter peopleCounter; // Reference to the PeopleCounter script
+
+
     private void Start()
     {
         previewObject = emptyPreviewObject;
@@ -52,6 +55,9 @@ public class Placement : MonoBehaviour
         gridData = new();
 
         cellIndicatorRenderer = cellIndicator.GetComponentInChildren<Renderer>();
+
+        peopleCounter = FindObjectOfType<PeopleCounter>(); // Assumes there's only one PeopleCounter in the scene
+
     }
 
     public void StartPlacement(int ID)
@@ -131,6 +137,12 @@ public class Placement : MonoBehaviour
         newObject.transform.position = objectPosition;
         newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
         placedGameObjects.Add(newObject);
+
+        // Increment the people counter when a new character is placed
+        if (peopleCounter != null)
+        {
+            peopleCounter.IncrementCount(); // Increment the count for the new character
+        }
 
         gridData.AddObjectAt(gridPosition,
             rotation,
