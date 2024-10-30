@@ -134,30 +134,31 @@ public class Placement : MonoBehaviour
 
         Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
-
         Vector3Int placePosition = gridPosition + objectOffset;
 
+        // Check placement validity
         bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
 
         if (!placementValidity)
             return;
 
-        // Instantiate the new object
+        // Instantiate the new object only if placement is valid
         GameObject newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
 
         // Remove NavMeshAgent if it exists
         NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
         if (navMeshAgent != null)
         {
-            Destroy(navMeshAgent); 
+            Destroy(navMeshAgent);
         }
 
-        // Apply the consistent position calculation
+        // Set the new object's position and rotation
         Vector3 objectPosition = CalculateObjectPosition(placePosition, CheckPreviewOverChair(gridPosition));
         newObject.transform.position = objectPosition;
         newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
-        placedGameObjects.Add(newObject);
+        placedGameObjects.Add(newObject);  // Keep track of placed objects
 
+        // Register the new object in grid data
         gridData.AddObjectAt(gridPosition,
             rotation,
             database.objectsData[selectedObjectIndex].Size,
@@ -165,22 +166,33 @@ public class Placement : MonoBehaviour
             placedGameObjects.Count - 1);
 
         CheckAndSetSitting(newObject, placePosition);
+
+        // Stop placement after successfully placing
+        StopPlacement();
     }
+
+
 
     private void CheckAndSetSitting(GameObject placedObject, Vector3Int gridPosition)
     {
+        // Calculate the center position based on the grid level (top or bottom)
         Vector3 center = grid.CellToWorld(gridPosition);
-        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f); 
+        bool isPlacingOnTop = gridPosition.y > 0; // Example condition for placing on the top grid
+
+        // Adjust the Y position of the center based on the grid level
+        center.y += isPlacingOnTop ? topGridHeightOffset : bottomGridHeightOffset;
+        
+        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f);
 
         Collider[] hitColliders = Physics.OverlapBox(center, halfExtents);
         foreach (var collider in hitColliders)
         {
             if (collider.CompareTag("Chair"))
             {
-                Vector3 gridCenter = grid.CellToWorld(gridPosition);
-                gridCenter.y = placedObject.transform.position.y; // Keep current Y position
+                Vector3 adjustedPosition = grid.CellToWorld(gridPosition);
+                adjustedPosition.y = placedObject.transform.position.y; // Keep the Y position as it is
 
-                placedObject.transform.position = gridCenter;
+                placedObject.transform.position = adjustedPosition;
 
                 Animator animator = placedObject.GetComponent<Animator>();
                 if (animator != null)
@@ -206,24 +218,32 @@ public class Placement : MonoBehaviour
 
     private void StopPlacement()
     {
+        // Clear selectedObjectIndex to stop further placement
         selectedObjectIndex = -1;
 
+        // Disable visual indicators
         gridVisualisationTop.SetActive(false);
         gridVisualisationBottom.SetActive(false);
         cellIndicator.SetActive(false);
 
-        if (previewObject.tag != "CannotDestroy")
+        // Destroy the preview object only if it's not marked as "CannotDestroy"
+        if (previewObject != null && previewObject.tag != "CannotDestroy")
+        {
             Destroy(previewObject);
-        previewObject = emptyPreviewObject;
+        }
+        previewObject = emptyPreviewObject; // Reset preview object to the empty one
         previewObject.SetActive(false);
 
+        // Reset rotation and offset
         rotation = 0;
         objectOffset = new Vector3Int(0, 0, 0);
 
+        // Unsubscribe from events to prevent overlaps
         inputManager.OnClicked -= PlaceStructure;
         inputManager.OnExit -= StopPlacement;
         inputManager.OnRotate -= RotateStructure;
     }
+
 
     void Update()
     {
@@ -238,45 +258,65 @@ public class Placement : MonoBehaviour
 
         bool isOverChair = CheckPreviewOverChair(gridPosition);
 
-        // Consistently apply calculated position to the preview object
+        // Update preview position with offsets if applicable
         Vector3 previewPosition = CalculateObjectPosition(gridPosition, isOverChair);
         previewObject.transform.position = previewPosition;
 
+        // Update preview animator for seated state
         Animator previewAnimator = previewObject.GetComponent<Animator>();
         if (previewAnimator != null)
         {
             previewAnimator.SetBool("IsSeated", isOverChair);
         }
 
+        // Update preview materials based on placement validity
         Material materialToChangeTo = placementValidity ? previewObjectMaterialValid : previewObjectMaterialInvalid;
         foreach (Renderer renderer in previewObjectRenderers)
         {
             renderer.material = materialToChangeTo;
         }
 
-        Vector3 cellIndicatorPosition = grid.CellToWorld(gridPosition);
-        cellIndicatorPosition.y += 0.1f;
+        // Apply the exact grid offset and placement height to the cellIndicator as well
+        Vector3 cellIndicatorPosition = CalculateObjectPosition(gridPosition, isOverChair);
+        cellIndicatorPosition.y += 0.01f; // Add slight offset to prevent Z-fighting
         cellIndicator.transform.position = cellIndicatorPosition;
 
+        // Set mouse indicator to mouse position
         mouseIndicator.transform.position = mousePosition;
     }
 
+
     private bool CheckPreviewOverChair(Vector3Int gridPosition)
     {
-        Vector3 center = grid.CellToWorld(gridPosition); // Get the world position of the grid cell
-        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f); // Set the size of the overlap box
+        Vector3 center = grid.CellToWorld(gridPosition); 
+        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f); 
 
+        // Check if the object is on the top grid or bottom grid
+        bool isPlacingOnTop = gridPosition.y > 0; // Example condition for placing on the top grid
+
+        // Apply appropriate offset based on grid level
+        if (isPlacingOnTop)
+        {
+            center.y += topGridHeightOffset;
+        }
+        else
+        {
+            center.y += bottomGridHeightOffset;
+        }
+
+        // Check for nearby chairs within the specified bounds
         Collider[] hitColliders = Physics.OverlapBox(center, halfExtents);
         foreach (var collider in hitColliders)
         {
             if (collider.CompareTag("Chair"))
             {
-                return true; // A chair is found within the overlap box
+                return true; // Chair found nearby
             }
         }
 
-        return false; // No chair was found
+        return false; // No chair was found in the area
     }
+
 
     [SerializeField]
     private float topGridHeightOffset = 0.1f;  // Adjust as needed for top grid alignment
