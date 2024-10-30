@@ -42,11 +42,6 @@ public class Placement : MonoBehaviour
     private int rotation = 0;
     private Vector3Int objectOffset;
 
-    private float placementHeightOffset = 0.1f;
-
-    private PeopleCounter peopleCounter; // Reference to the PeopleCounter script
-
-
     private void Start()
     {
         previewObject = emptyPreviewObject;
@@ -55,9 +50,6 @@ public class Placement : MonoBehaviour
         gridData = new();
 
         cellIndicatorRenderer = cellIndicator.GetComponentInChildren<Renderer>();
-
-        peopleCounter = FindObjectOfType<PeopleCounter>(); // Assumes there's only one PeopleCounter in the scene
-
     }
 
     public void StartPlacement(int ID)
@@ -66,11 +58,35 @@ public class Placement : MonoBehaviour
         selectedObjectIndex = database.objectsData.FindIndex(data => data.ID == ID);
         if (selectedObjectIndex < 0)
         {
-            if (selectedObjectIndex != -1)
-                Debug.LogError($"No ID found, {ID}");
             return;
         }
 
+        gridVisualisationTop.SetActive(true);
+        gridVisualisationBottom.SetActive(true);
+        cellIndicator.SetActive(true);
+
+        previewObject.SetActive(true);
+        previewObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
+        previewObjectRenderers = previewObject.GetComponentsInChildren<Renderer>();
+
+        inputManager.OnClicked += PlaceStructure;
+        inputManager.OnExit += StopPlacement;
+        inputManager.OnRotate += RotateStructure;
+    }
+
+    public void StartPlacement(GameObject npc)
+    {
+        StopPlacement(); // Stop any existing placement
+
+        ObjectData npcData = database.objectsData.Find(data => data.Prefab == npc);
+        if (npcData == null)
+        {
+            return; // NPC data not found
+        }
+
+        selectedObjectIndex = database.objectsData.FindIndex(data => data.ID == npcData.ID);
+        
+        // Continue with the rest of your StartPlacement logic...
         gridVisualisationTop.SetActive(true);
         gridVisualisationBottom.SetActive(true);
         cellIndicator.SetActive(true);
@@ -113,7 +129,7 @@ public class Placement : MonoBehaviour
 
     private void PlaceStructure()
     {
-        if (inputManager.IsPointerOverUI())
+        if (inputManager.IsPointerOverUI() || inputManager.IsPointerOverNPC())
             return;
 
         Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
@@ -124,25 +140,23 @@ public class Placement : MonoBehaviour
         bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
 
         if (!placementValidity)
-        {
-            Debug.Log("Invalid Pos");
             return;
-        }
 
+        // Instantiate the new object
         GameObject newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
 
-        Vector3 objectPosition = grid.CellToWorld(placePosition);
-        objectPosition.y += placementHeightOffset;
+        // Remove NavMeshAgent if it exists
+        NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
+        if (navMeshAgent != null)
+        {
+            Destroy(navMeshAgent); 
+        }
 
+        // Apply the consistent position calculation
+        Vector3 objectPosition = CalculateObjectPosition(placePosition, CheckPreviewOverChair(gridPosition));
         newObject.transform.position = objectPosition;
         newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
         placedGameObjects.Add(newObject);
-
-        // Increment the people counter when a new character is placed
-        if (peopleCounter != null)
-        {
-            peopleCounter.IncrementCount(); // Increment the count for the new character
-        }
 
         gridData.AddObjectAt(gridPosition,
             rotation,
@@ -150,15 +164,8 @@ public class Placement : MonoBehaviour
             database.objectsData[selectedObjectIndex].ID,
             placedGameObjects.Count - 1);
 
-        NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
-        if (navMeshAgent != null)
-        {
-            Destroy(navMeshAgent); 
-        }
-
         CheckAndSetSitting(newObject, placePosition);
     }
-
 
     private void CheckAndSetSitting(GameObject placedObject, Vector3Int gridPosition)
     {
@@ -181,16 +188,12 @@ public class Placement : MonoBehaviour
                     animator.SetBool("IsSeated", true);
                     ApplySittingOffset(placedObject);
 
-                    
                     GridCollisionDetection gridCollisionDetection = FindFirstObjectByType<GridCollisionDetection>();
-                        if (gridCollisionDetection != null)
-                        {
-                            gridCollisionDetection.OnCharacterSeated(database.objectsData[selectedObjectIndex],placedObject , placedObject.transform.position);
-                            break;
-                        }
-
-
-
+                    if (gridCollisionDetection != null)
+                    {
+                        gridCollisionDetection.OnCharacterSeated(database.objectsData[selectedObjectIndex], placedObject, placedObject.transform.position);
+                        break;
+                    }
                 }
             }
         }
@@ -233,12 +236,12 @@ public class Placement : MonoBehaviour
         bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
         cellIndicatorRenderer.material.color = placementValidity ? Color.white : Color.red;
 
-        Vector3 previewPosition = grid.CellToWorld(gridPosition + objectOffset);
-        previewPosition.y += placementHeightOffset;
+        bool isOverChair = CheckPreviewOverChair(gridPosition);
+
+        // Consistently apply calculated position to the preview object
+        Vector3 previewPosition = CalculateObjectPosition(gridPosition, isOverChair);
         previewObject.transform.position = previewPosition;
 
-        // Check if the preview object is over a chair and set animation accordingly
-        bool isOverChair = CheckPreviewOverChair(gridPosition);
         Animator previewAnimator = previewObject.GetComponent<Animator>();
         if (previewAnimator != null)
         {
@@ -251,7 +254,6 @@ public class Placement : MonoBehaviour
             renderer.material = materialToChangeTo;
         }
 
-        // Adjust cellIndicator position slightly above the grid
         Vector3 cellIndicatorPosition = grid.CellToWorld(gridPosition);
         cellIndicatorPosition.y += 0.1f;
         cellIndicator.transform.position = cellIndicatorPosition;
@@ -259,21 +261,51 @@ public class Placement : MonoBehaviour
         mouseIndicator.transform.position = mousePosition;
     }
 
-
     private bool CheckPreviewOverChair(Vector3Int gridPosition)
     {
-        Vector3 center = grid.CellToWorld(gridPosition);
-        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f);
+        Vector3 center = grid.CellToWorld(gridPosition); // Get the world position of the grid cell
+        Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f); // Set the size of the overlap box
 
         Collider[] hitColliders = Physics.OverlapBox(center, halfExtents);
         foreach (var collider in hitColliders)
         {
             if (collider.CompareTag("Chair"))
             {
-                return true;
+                return true; // A chair is found within the overlap box
             }
         }
-        return false;
+
+        return false; // No chair was found
     }
 
+    [SerializeField]
+    private float topGridHeightOffset = 0.1f;  // Adjust as needed for top grid alignment
+    [SerializeField]
+    private float bottomGridHeightOffset = 5f;  // Adjust for bottom grid
+
+    private Vector3 CalculateObjectPosition(Vector3Int gridPosition, bool isOverChair)
+    {
+        // Determine if we're placing on the top or bottom grid
+        bool isPlacingOnTop = gridPosition.y > 0; // Example condition for placing on the top grid
+
+        Vector3 position = grid.CellToWorld(gridPosition);
+
+        // Adjust position based on the grid level and whether over a chair
+        if (isPlacingOnTop)
+        {
+            position.y += topGridHeightOffset; // Offset for top grid
+        }
+        else
+        {
+            position.y += bottomGridHeightOffset; // Offset for bottom grid
+        }
+
+        // Further adjust if over a chair
+        if (isOverChair)
+        {
+            position.y += sittingPositionOffset.y; // Adjust height when seated
+        }
+
+        return position;
+    }
 }

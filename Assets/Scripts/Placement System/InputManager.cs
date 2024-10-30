@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -19,7 +17,6 @@ public class InputManager : MonoBehaviour
 
     public event Action OnClicked, OnExit, OnRotate;
 
-    // Update is called once per frame
     void Update()
     {
         if(Input.GetMouseButtonDown(0)){
@@ -54,5 +51,22 @@ public class InputManager : MonoBehaviour
         }
 
         return nullObject;
+    }
+
+    public bool IsPointerOverNPC()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            // Check if the hit object is an NPC
+            if (hit.collider.CompareTag("Character")) // Ensure your NPCs are tagged as "NPC"
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

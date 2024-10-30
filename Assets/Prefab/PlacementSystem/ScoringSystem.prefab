@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1982151073851085419
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2688179584676481504}
+  - component: {fileID: 9083753397322359542}
+  - component: {fileID: 2095484793058604122}
+  m_Layer: 0
+  m_Name: ScoringSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2688179584676481504
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1982151073851085419}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 14.44371, y: -25.376163, z: -39.121788}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9083753397322359542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1982151073851085419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b9620903a110bb43ab2e03257d0f876, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mouseIndicator: {fileID: 0}
+  cellIndicator: {fileID: 0}
+  inputManager: {fileID: 0}
+  grid: {fileID: 0}
+  database: {fileID: 11400000, guid: 5b26548f7f4eaf248bb68b8cb384e247, type: 2}
+  gridVisualisationTop: {fileID: 0}
+  gridVisualisationBottom: {fileID: 0}
+  emptyPreviewObject: {fileID: 2698389642773390158, guid: db9f04f15e1a5a64eac99a313fd87979, type: 3}
+  previewObjectMaterialValid: {fileID: 2100000, guid: 93f74adb0bd8708478aea940b05b03b6, type: 2}
+  previewObjectMaterialInvalid: {fileID: 2100000, guid: 53858b060aeec4945bef739b515ecf7d, type: 2}
+  sittingPositionOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &2095484793058604122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1982151073851085419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a96aaafac30af0846be9e9155e30d663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grid1: {fileID: 0}
+  grid2: {fileID: 0}
+  detectionRadius: 2
+  scoreText: {fileID: 0}
+  gameOverPanel: {fileID: 0}

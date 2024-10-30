@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: STUDENT
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7795e5967c5199f49a3af9c6d16488a3, type: 3}
+      propertyPath: m_TagString
+      value: Character
+      objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 7795e5967c5199f49a3af9c6d16488a3, type: 3}
       propertyPath: m_Controller
       value: 
@@ -63,6 +67,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7795e5967c5199f49a3af9c6d16488a3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2291443831865151308}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7795e5967c5199f49a3af9c6d16488a3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6099399697514921791}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7795e5967c5199f49a3af9c6d16488a3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2066428640804795573}
   m_SourcePrefab: {fileID: 100100000, guid: 7795e5967c5199f49a3af9c6d16488a3, type: 3}
 --- !u!1 &449715033663550538 stripped
 GameObject:
@@ -78,7 +88,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 449715033663550538}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.4
   m_Speed: 1
   m_Acceleration: 8
   avoidancePriority: 50
@@ -91,3 +101,39 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!136 &-6099399697514921791
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 449715033663550538}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2.54
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &2066428640804795573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 449715033663550538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a63b952612c823d4da80020a1a5413ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectDatabase: {fileID: 11400000, guid: 5b26548f7f4eaf248bb68b8cb384e247, type: 2}
