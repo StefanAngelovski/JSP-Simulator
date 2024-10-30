@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,11 +13,81 @@ public class GridCollisionDetection : MonoBehaviour
     public GameObject gameOverPanel;
     private int score = 0;
     private GameObject objectToRelocate;
+
+    public Button BusButton;
+    public TextMeshProUGUI timerText;
+    private int minutes;
+    private int seconds;
+    private Coroutine countdownCoroutine; 
+
     private List<(ObjectData SeatedObject, GameObject ObjectGameObject, Vector3Int Position)> seatedObjects = new List<(ObjectData, GameObject, Vector3Int)>();
 
     public void Start()
     {
-        UpdateScore(); // Initialize score display
+        gameOverPanel.SetActive(false);
+        Vector3Int grid1PositionInt = GetIntegerPosition(grid1.transform.position);
+        Vector3Int grid2PositionInt = GetIntegerPosition(grid2.transform.position);
+
+        Debug.Log("Grid1 integer position: " + grid1PositionInt);
+        Debug.Log("Grid2 integer position: " + grid2PositionInt);
+
+        if (BusButton != null)
+        {
+            BusButton.onClick.AddListener(ClearSeatedObjects);
+        }
+
+        // Start the countdown timer coroutine
+        countdownCoroutine = StartCoroutine(CountdownTimer());
+    }
+
+     private IEnumerator CountdownTimer()
+    {
+        minutes = 1; 
+        seconds = 0;
+
+        while (true)
+        {
+            timerText.text = string.Format("Time until new bus arrives: {0:00}:{1:00}", minutes, seconds);
+            yield return new WaitForSeconds(1);
+
+            seconds--;
+
+            if (seconds < 0)
+            {
+                seconds = 59;
+                minutes--;
+                if (minutes < 0)
+                {
+                    minutes = 0; 
+                    seconds = 0; 
+                    ClearSeatedObjects();
+                    minutes = 1;
+                }
+            }
+        }
+    }
+
+    private void ClearSeatedObjects()
+    {
+        if (countdownCoroutine != null)
+        {
+            StopCoroutine(countdownCoroutine);
+            countdownCoroutine = null;
+        }
+
+        minutes = 1;
+        seconds = 0;
+
+        countdownCoroutine = StartCoroutine(CountdownTimer());
+
+        foreach (var item in seatedObjects)
+        {
+            Destroy(item.ObjectGameObject);
+        }
+
+        seatedObjects.Clear();
+
+        Debug.Log("seatedObjects list has been cleared, and all associated GameObjects have been destroyed.");
     }
 
     public void OnCharacterSeated(ObjectData seatedObject, GameObject objectGameObject, Vector3 position)
@@ -25,19 +96,20 @@ public class GridCollisionDetection : MonoBehaviour
         seatedObjects.Add((seatedObject, objectGameObject, objectPositionInt));
 
         CheckPosition(seatedObject, objectPositionInt);
+
         CheckForNeighbors(seatedObject, objectGameObject, objectPositionInt);
 
-        if(score < 0){
+        if (score < 0)
+        {
             score = 0;
         }
-        UpdateScore(); // Update score whenever it changes
         Debug.Log("Position of object (integer): " + objectPositionInt);
-        Debug.Log("Score is: " + score);
+        Debug.Log("score is:" + score);
     }
 
     private void CheckPosition(ObjectData newObject, Vector3Int newPosition)
     {
-        // Preferred position for different types
+        //prefered position window and back?
         if (newObject.type == "adult")
         {
             if ((newPosition.x == 7 && newPosition.y == 10) ||
@@ -51,38 +123,35 @@ public class GridCollisionDetection : MonoBehaviour
             }
         }
 
-        if(newObject.type == "elder"){
-            if((newPosition.z >= 29) ||
-               (newPosition.x == 9 && newPosition.y == 10) ||
-               (newPosition.x == 9 && newPosition.y == 8)){
+        //prefered position front and aisle
+        if (newObject.type == "elder")
+        {
+            if ((newPosition.z >= 29) ||
+                (newPosition.x == 9 && newPosition.y == 10) ||
+                (newPosition.x == 9 && newPosition.y == 8))
+            {
                 score += 10;
                 Debug.Log("Elder placed on the right spot");
-               }
+            }
         }
 
-        if(newObject.type == "kid" || newObject.type == "student"){
-            if((newPosition.y == 10 && newPosition.z == 28) ||
-               (newPosition.y == 8 && newPosition.z == 28) ||
-               (newPosition.z <= 26))
-               {
+        //prefered middle and back
+        if (newObject.type == "kid" || newObject.type == "student")
+        {
+            if ((newPosition.y == 10 && newPosition.z == 28) ||
+                (newPosition.y == 8 && newPosition.z == 28) ||
+                (newPosition.z <= 26))
+            {
                 score += 10;
                 Debug.Log("Kid placed on the right spot");
-               }
+            }
         }
 
-        if(newObject.type == "police"){
-            if(newPosition.z <= 26){
+        if (newObject.type == "police")
+        {
+            if (newPosition.z <= 26)
+            {
                 score += 10;
-            }
-        }
-
-        if(newObject.type == "celebrity"){
-                Debug.Log("Celebrity object detected with position: " + newPosition);
-            if(newPosition.z >= 30 || newPosition.z <= 26){
-                UpdateScore();
-            }
-            else{
-                score += 50;
             }
         }
     }
@@ -106,42 +175,53 @@ public class GridCollisionDetection : MonoBehaviour
             {
                 if (existingObject.Position == neighborPosition)
                 {
-                    // Neighbor conditions with appropriate variables
-
+                    //if you place an elder next to a kid
                     if (existingObject.SeatedObject.type == "kid" && newObject.type == "elder")
                     {
-                        Debug.Log("Elder next to kid");
+                        Debug.Log("elder next to kid");
                         score += 10; 
                     }
-                    else if (existingObject.SeatedObject.type == "elder" && newObject.type == "elder")
+                    
+                    //if you place two elders next to eachother
+                    else if(existingObject.SeatedObject.type == "elder" && newObject.type == "elder")
                     {
                         score += 20;
                     }
-                    else if (existingObject.SeatedObject.type == "police" && newObject.type == "elder")
+
+                    //if you place an elder next to police
+                    else if(existingObject.SeatedObject.type == "police" && newObject.type == "elder")
                     {
-                        Debug.Log("Kid placed next to elder");
+                        Debug.Log("kid placed next to elder");
                         StartTimer(newObjectGameObject, 0);
                         score += 10;
                     }
-                    else if (existingObject.SeatedObject.type == "elder" && newObject.type == "kid")
+
+                    //if you place a kid next to an elder (wait for the kid to change seats and dedact the score)
+                    else if(existingObject.SeatedObject.type == "elder" && newObject.type == "kid")
                     {
-                        Debug.Log("Kid placed next to elder");
+                        Debug.Log("kid placed next to elder");
                         StartTimer(newObjectGameObject, 0);
                         score += 10;
                     }
-                    else if (existingObject.SeatedObject.type == "adult" && newObject.type == "adult")
+
+                    //if you place two adults next to eachother
+                    else if(existingObject.SeatedObject.type == "adult" && newObject.type == "adult")
                     {
                         score += 20;
                     }
-                    else if (existingObject.SeatedObject.type == "kid" && newObject.type == "police")
+
+                    //if you place a police next to a kid (kid leaves the bus)
+                    else if(existingObject.SeatedObject.type == "kid" && newObject.type == "police")
                     {
-                        Destroy(newObjectGameObject); 
+                        Destroy(existingObject.ObjectGameObject); 
                         neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
                         score -= 50;
                     }
-                    else if (existingObject.SeatedObject.type == "student" && newObject.type == "police")
+
+                    //if you place a police next to a student (replace the location for the student)
+                    else if(existingObject.SeatedObject.type == "student" && newObject.type == "police")
                     {
-                        Debug.Log("Police next to student");
+                        Debug.Log("police next to student");
                         StartTimer(existingObject.ObjectGameObject ,0);
                         score -= 20;
                     }
@@ -193,8 +273,9 @@ public class GridCollisionDetection : MonoBehaviour
         return new Vector3Int(x, y, z);
     }
 
-    private void UpdateScore()
-    {
+    private void GameOver(int score){
         scoreText.text = "Score: " + score.ToString();
+        Time.timeScale = 0;
+        gameOverPanel.SetActive(true);
     }
 }
