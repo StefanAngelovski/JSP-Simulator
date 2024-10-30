@@ -39,6 +39,10 @@ public class Placement : MonoBehaviour
     [SerializeField]
     private Vector3 sittingPositionOffset = new Vector3(0, 0, 0);
 
+    [SerializeField]
+    private GameObject bus; 
+
+
     private int rotation = 0;
     private Vector3Int objectOffset;
 
@@ -74,31 +78,36 @@ public class Placement : MonoBehaviour
         inputManager.OnRotate += RotateStructure;
     }
 
+     private GameObject originalNPC; // Add this field to store the original NPC reference
+
     public void StartPlacement(GameObject npc)
     {
-        StopPlacement(); // Stop any existing placement
+        StopPlacement();
 
         ObjectData npcData = database.objectsData.Find(data => data.Prefab == npc);
         if (npcData == null)
         {
-            return; // NPC data not found
+            return;
         }
 
         selectedObjectIndex = database.objectsData.FindIndex(data => data.ID == npcData.ID);
         
-        // Continue with the rest of your StartPlacement logic...
+        // Store the original NPC reference without modifying it
+        originalNPC = npc;
+        
         gridVisualisationTop.SetActive(true);
         gridVisualisationBottom.SetActive(true);
         cellIndicator.SetActive(true);
 
-        previewObject.SetActive(true);
-        previewObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
+        // Create preview object as a clone
+        previewObject = Instantiate(npc);
         previewObjectRenderers = previewObject.GetComponentsInChildren<Renderer>();
 
         inputManager.OnClicked += PlaceStructure;
         inputManager.OnExit += StopPlacement;
         inputManager.OnRotate += RotateStructure;
     }
+
 
     private void RotateStructure()
     {
@@ -136,29 +145,45 @@ public class Placement : MonoBehaviour
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
         Vector3Int placePosition = gridPosition + objectOffset;
 
-        // Check placement validity
         bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
 
         if (!placementValidity)
             return;
 
-        // Instantiate the new object only if placement is valid
-        GameObject newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
-
-        // Remove NavMeshAgent if it exists
-        NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
-        if (navMeshAgent != null)
+        // Use the original NPC for placement and destroy it after setting up the new position
+        GameObject newObject;
+        if (originalNPC != null)
         {
-            Destroy(navMeshAgent);
+            // Create the new instance first
+            newObject = Instantiate(originalNPC);
+            
+            // Destroy the NavMeshAgent if it exists
+            NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
+            if (navMeshAgent != null)
+            {
+                Destroy(navMeshAgent);
+            }
+
+            // Now destroy the original NPC since placement was successful
+            Destroy(originalNPC);
+        }
+        else
+        {
+            // Fallback to original behavior if no originalNPC exists
+            newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
+            NavMeshAgent agent = newObject.GetComponent<NavMeshAgent>();
+            if (agent != null)
+            {
+                Destroy(agent);
+            }
         }
 
-        // Set the new object's position and rotation
+        // Set the position and rotation
         Vector3 objectPosition = CalculateObjectPosition(placePosition, CheckPreviewOverChair(gridPosition));
         newObject.transform.position = objectPosition;
         newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
-        placedGameObjects.Add(newObject);  // Keep track of placed objects
+        placedGameObjects.Add(newObject);
 
-        // Register the new object in grid data
         gridData.AddObjectAt(gridPosition,
             rotation,
             database.objectsData[selectedObjectIndex].Size,
@@ -167,7 +192,9 @@ public class Placement : MonoBehaviour
 
         CheckAndSetSitting(newObject, placePosition);
 
-        // Stop placement after successfully placing
+        // Clear the originalNPC reference
+        originalNPC = null;
+        
         StopPlacement();
     }
 
@@ -218,30 +245,28 @@ public class Placement : MonoBehaviour
 
     private void StopPlacement()
     {
-        // Clear selectedObjectIndex to stop further placement
+        // Don't do anything with originalNPC here - let it remain as is if placement wasn't completed
         selectedObjectIndex = -1;
-
-        // Disable visual indicators
         gridVisualisationTop.SetActive(false);
         gridVisualisationBottom.SetActive(false);
         cellIndicator.SetActive(false);
 
-        // Destroy the preview object only if it's not marked as "CannotDestroy"
         if (previewObject != null && previewObject.tag != "CannotDestroy")
         {
             Destroy(previewObject);
         }
-        previewObject = emptyPreviewObject; // Reset preview object to the empty one
+        previewObject = emptyPreviewObject;
         previewObject.SetActive(false);
 
-        // Reset rotation and offset
         rotation = 0;
         objectOffset = new Vector3Int(0, 0, 0);
 
-        // Unsubscribe from events to prevent overlaps
         inputManager.OnClicked -= PlaceStructure;
         inputManager.OnExit -= StopPlacement;
         inputManager.OnRotate -= RotateStructure;
+        
+        // Clear the originalNPC reference if we're stopping placement
+        originalNPC = null;
     }
 
 
@@ -283,7 +308,23 @@ public class Placement : MonoBehaviour
 
         // Set mouse indicator to mouse position
         mouseIndicator.transform.position = mousePosition;
+
+        // Update all placed NPCs to move with the bus
+        UpdatePlacedNPCs();
     }
+
+
+    private void UpdatePlacedNPCs()
+    {
+        foreach (GameObject placedNPC in placedGameObjects)
+        {
+            Vector3 busPosition = bus.transform.position;
+            
+            Vector3 offset = placedNPC.transform.position - grid.transform.position; // Offset relative to grid
+            placedNPC.transform.position = busPosition + offset;
+        }
+    }
+
 
 
     private bool CheckPreviewOverChair(Vector3Int gridPosition)
