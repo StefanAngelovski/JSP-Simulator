@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class NPCSpawner : MonoBehaviour
 {
     public ObjectDatabaseSO objectDatabase;  
-    public int npcCount = 5;
+    public int npcCount = 5;  // Desired number of NPCs
     public Collider spawnArea;
     public float moveInterval = 2f;
     public float moveDistance = 5f;
@@ -24,7 +24,8 @@ public class NPCSpawner : MonoBehaviour
 
     void SpawnNPCs()
     {
-        for (int i = 0; i < npcCount; i++)
+        int currentNPCCount = spawnedNPCs.Count;
+        for (int i = currentNPCCount; i < npcCount; i++)  // Spawn only missing NPCs
         {
             ObjectData npcData = objectDatabase.objectsData[Random.Range(0, objectDatabase.objectsData.Count)];
             GameObject npcPrefab = npcData.Prefab; 
@@ -140,8 +141,39 @@ public class NPCSpawner : MonoBehaviour
         }
     }
 
+
     private bool DetectObstacle(Vector3 origin, Vector3 direction)
     {
         return Physics.Raycast(origin, direction, obstacleDetectionDistance);
+    }
+
+
+
+    public void RestoreNPCCount()
+    {
+        // Remove any null (destroyed) NPCs from the list
+        spawnedNPCs.RemoveAll(npc => npc == null);
+
+        // Calculate how many NPCs need to be spawned
+        int missingNPCs = npcCount - spawnedNPCs.Count;
+
+        // Spawn only the number of missing NPCs
+        for (int i = 0; i < missingNPCs; i++)
+        {
+            ObjectData npcData = objectDatabase.objectsData[Random.Range(0, objectDatabase.objectsData.Count)];
+            GameObject npcPrefab = npcData.Prefab;
+            Vector3 randomPosition = GetRandomPositionInCollider();
+            GameObject npc = Instantiate(npcPrefab, randomPosition, Quaternion.identity);
+            spawnedNPCs.Add(npc);
+
+            NavMeshAgent agent = npc.GetComponent<NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.angularSpeed = rotationSpeed;
+                agent.updateRotation = false; 
+            }
+
+            StartCoroutine(MoveNPC(npc));
+        }
     }
 }

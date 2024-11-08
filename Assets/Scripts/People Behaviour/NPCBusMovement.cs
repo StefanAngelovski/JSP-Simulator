@@ -4,7 +4,6 @@ public class NPCBusMovement : MonoBehaviour
 {
     private Vector3 initialGridOffset;
     private Transform busTransform;
-    private Transform gridTransform;
     private bool isInitialized = false;
     private bool isSeated = false;
     private Vector3 seatOffset;
@@ -12,7 +11,6 @@ public class NPCBusMovement : MonoBehaviour
     public void Initialize(Transform bus, Transform grid, Vector3 exactPlacementPosition)
     {
         busTransform = bus;
-        gridTransform = grid;
 
         // Store the exact offset from the grid using the placement position
         initialGridOffset = exactPlacementPosition - bus.position;

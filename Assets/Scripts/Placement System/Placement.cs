@@ -35,10 +35,6 @@ public class Placement : MonoBehaviour
     [SerializeField]
     private Material previewObjectMaterialInvalid;
 
-    // Sitting position offset, adjustable in the Unity Inspector
-    [SerializeField]
-    private Vector3 sittingPositionOffset = new Vector3(0, 0, 0);
-
     [SerializeField]
     private GameObject bus; 
 
@@ -196,9 +192,6 @@ public class Placement : MonoBehaviour
             CheckAndSetSitting(newObject, placePosition);
         }
 
-        // Log the position of the actual NPC object after placement
-        Debug.Log("NPC Actual Position (After Placement): " + newObject.transform.position);
-
         originalNPC = null;
         StopPlacement();
     }
@@ -231,15 +224,11 @@ public class Placement : MonoBehaviour
                     
                     // Update the NPCBusMovement component with seated state
                     NPCBusMovement busMovement = placedObject.GetComponent<NPCBusMovement>();
-                    if (busMovement != null)
-                    {
-                        busMovement.UpdateSeatedState(true, sittingPositionOffset);
-                    }
 
-                    GridCollisionDetection gridCollisionDetection = FindFirstObjectByType<GridCollisionDetection>();
-                    if (gridCollisionDetection != null)
+                    ScoringSystem scoringSystem = FindFirstObjectByType<ScoringSystem>();
+                    if (scoringSystem != null)
                     {
-                        gridCollisionDetection.OnCharacterSeated(database.objectsData[selectedObjectIndex], placedObject, placedObject.transform.position);
+                        scoringSystem.OnCharacterSeated(database.objectsData[selectedObjectIndex], placedObject, placedObject.transform.position);
                         break;
                     }
                 }
@@ -289,9 +278,6 @@ public class Placement : MonoBehaviour
         // Update preview position with offsets if applicable
         Vector3 previewPosition = CalculateObjectPosition(gridPosition, isOverChair);
         previewObject.transform.position = previewPosition;
-
-        // Log the position of the NPC preview before placement
-        Debug.Log("NPC Preview Position (Before Placement): " + previewObject.transform.position);
 
         // Update preview animator for seated state
         Animator previewAnimator = previewObject.GetComponent<Animator>();
@@ -373,12 +359,6 @@ public class Placement : MonoBehaviour
         else
         {
             position.y += bottomGridHeightOffset; // Offset for bottom grid
-        }
-
-        // Further adjust if over a chair
-        if (isOverChair)
-        {
-            position.y += sittingPositionOffset.y; // Adjust height when seated
         }
 
         return position;

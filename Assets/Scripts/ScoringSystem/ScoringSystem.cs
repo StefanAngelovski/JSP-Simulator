@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class GridCollisionDetection : MonoBehaviour
+public class ScoringSystem : MonoBehaviour
 {
     public GameObject grid1;
     public GameObject grid2;
@@ -27,6 +27,7 @@ public class GridCollisionDetection : MonoBehaviour
 
     private bool isBusLeaving = false;
     private bool isBusPresent = true;
+    public NPCSpawner npcSpawner; 
 
     private List<(ObjectData SeatedObject, GameObject ObjectGameObject, Vector3Int Position)> seatedObjects = new List<(ObjectData, GameObject, Vector3Int)>();
 
@@ -103,6 +104,7 @@ public class GridCollisionDetection : MonoBehaviour
 
         ClearSeatedObjects();
 
+        // Respawn NPCs after bus arrives back
         busAnimator.SetTrigger("IsComing");
 
         float comingAnimationDuration = 4f;
@@ -110,7 +112,15 @@ public class GridCollisionDetection : MonoBehaviour
 
         busAnimator.ResetTrigger("IsComing");
         isBusPresent = true;
+
+        // Only restore NPC count after bus arrival
+        if (npcSpawner != null)
+        {
+            npcSpawner.RestoreNPCCount();
+        }
     }
+
+
 
     private void ClearSeatedObjects()
     {
