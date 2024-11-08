@@ -145,8 +145,6 @@ public class GridCollisionDetection : MonoBehaviour
         CheckForNeighbors(seatedObject, objectGameObject, objectPositionInt);
 
         score = Mathf.Max(score, 0);
-        Debug.Log("Position of object (integer): " + objectPositionInt);
-        Debug.Log("Score is:" + score);
     }
 
     private void CheckPosition(ObjectData newObject, Vector3Int newPosition)

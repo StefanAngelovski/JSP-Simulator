@@ -150,26 +150,24 @@ public class Placement : MonoBehaviour
         if (!placementValidity)
             return;
 
-        // Use the original NPC for placement and destroy it after setting up the new position
+        // Calculate the exact position first - same as preview
+        bool isOverChair = CheckPreviewOverChair(gridPosition);
+        Vector3 exactPosition = CalculateObjectPosition(placePosition, isOverChair);
+
+        // Create the new object
         GameObject newObject;
         if (originalNPC != null)
         {
-            // Create the new instance first
             newObject = Instantiate(originalNPC);
-            
-            // Destroy the NavMeshAgent if it exists
             NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
             if (navMeshAgent != null)
             {
                 Destroy(navMeshAgent);
             }
-
-            // Now destroy the original NPC since placement was successful
             Destroy(originalNPC);
         }
         else
         {
-            // Fallback to original behavior if no originalNPC exists
             newObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
             NavMeshAgent agent = newObject.GetComponent<NavMeshAgent>();
             if (agent != null)
@@ -178,10 +176,13 @@ public class Placement : MonoBehaviour
             }
         }
 
-        // Set the position and rotation
-        Vector3 objectPosition = CalculateObjectPosition(placePosition, CheckPreviewOverChair(gridPosition));
-        newObject.transform.position = objectPosition;
+        // Set rotation
         newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
+        
+        // Add and initialize the bus movement component with exact position
+        NPCBusMovement busMovement = newObject.AddComponent<NPCBusMovement>();
+        busMovement.Initialize(bus.transform, grid.transform, exactPosition);
+
         placedGameObjects.Add(newObject);
 
         gridData.AddObjectAt(gridPosition,
@@ -190,25 +191,27 @@ public class Placement : MonoBehaviour
             database.objectsData[selectedObjectIndex].ID,
             placedGameObjects.Count - 1);
 
-        CheckAndSetSitting(newObject, placePosition);
+        if (isOverChair)
+        {
+            CheckAndSetSitting(newObject, placePosition);
+        }
 
-        // Clear the originalNPC reference
+        // Log the position of the actual NPC object after placement
+        Debug.Log("NPC Actual Position (After Placement): " + newObject.transform.position);
+
         originalNPC = null;
-        
         StopPlacement();
     }
 
 
 
+
     private void CheckAndSetSitting(GameObject placedObject, Vector3Int gridPosition)
     {
-        // Calculate the center position based on the grid level (top or bottom)
         Vector3 center = grid.CellToWorld(gridPosition);
-        bool isPlacingOnTop = gridPosition.y > 0; // Example condition for placing on the top grid
+        bool isPlacingOnTop = gridPosition.y > 0;
 
-        // Adjust the Y position of the center based on the grid level
         center.y += isPlacingOnTop ? topGridHeightOffset : bottomGridHeightOffset;
-        
         Vector3 halfExtents = new Vector3(0.5f, 0.5f, 0.5f);
 
         Collider[] hitColliders = Physics.OverlapBox(center, halfExtents);
@@ -217,7 +220,7 @@ public class Placement : MonoBehaviour
             if (collider.CompareTag("Chair"))
             {
                 Vector3 adjustedPosition = grid.CellToWorld(gridPosition);
-                adjustedPosition.y = placedObject.transform.position.y; // Keep the Y position as it is
+                adjustedPosition.y = placedObject.transform.position.y;
 
                 placedObject.transform.position = adjustedPosition;
 
@@ -225,7 +228,13 @@ public class Placement : MonoBehaviour
                 if (animator != null)
                 {
                     animator.SetBool("IsSeated", true);
-                    ApplySittingOffset(placedObject);
+                    
+                    // Update the NPCBusMovement component with seated state
+                    NPCBusMovement busMovement = placedObject.GetComponent<NPCBusMovement>();
+                    if (busMovement != null)
+                    {
+                        busMovement.UpdateSeatedState(true, sittingPositionOffset);
+                    }
 
                     GridCollisionDetection gridCollisionDetection = FindFirstObjectByType<GridCollisionDetection>();
                     if (gridCollisionDetection != null)
@@ -238,14 +247,8 @@ public class Placement : MonoBehaviour
         }
     }
 
-    private void ApplySittingOffset(GameObject placedObject)
-    {
-        placedObject.transform.position += sittingPositionOffset;
-    }
-
     private void StopPlacement()
     {
-        // Don't do anything with originalNPC here - let it remain as is if placement wasn't completed
         selectedObjectIndex = -1;
         gridVisualisationTop.SetActive(false);
         gridVisualisationBottom.SetActive(false);
@@ -287,6 +290,9 @@ public class Placement : MonoBehaviour
         Vector3 previewPosition = CalculateObjectPosition(gridPosition, isOverChair);
         previewObject.transform.position = previewPosition;
 
+        // Log the position of the NPC preview before placement
+        Debug.Log("NPC Preview Position (Before Placement): " + previewObject.transform.position);
+
         // Update preview animator for seated state
         Animator previewAnimator = previewObject.GetComponent<Animator>();
         if (previewAnimator != null)
@@ -308,22 +314,10 @@ public class Placement : MonoBehaviour
 
         // Set mouse indicator to mouse position
         mouseIndicator.transform.position = mousePosition;
-
-        // Update all placed NPCs to move with the bus
-        UpdatePlacedNPCs();
     }
 
 
-    private void UpdatePlacedNPCs()
-    {
-        foreach (GameObject placedNPC in placedGameObjects)
-        {
-            Vector3 busPosition = bus.transform.position;
-            
-            Vector3 offset = placedNPC.transform.position - grid.transform.position; // Offset relative to grid
-            placedNPC.transform.position = busPosition + offset;
-        }
-    }
+
 
 
 
@@ -362,7 +356,7 @@ public class Placement : MonoBehaviour
     [SerializeField]
     private float topGridHeightOffset = 0.1f;  // Adjust as needed for top grid alignment
     [SerializeField]
-    private float bottomGridHeightOffset = 5f;  // Adjust for bottom grid
+    private float bottomGridHeightOffset = 0.1f;  // Adjust for bottom grid
 
     private Vector3 CalculateObjectPosition(Vector3Int gridPosition, bool isOverChair)
     {

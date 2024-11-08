@@ -6658,9 +6658,9 @@ MonoBehaviour:
   previewObjectMaterialValid: {fileID: 2100000, guid: 93f74adb0bd8708478aea940b05b03b6, type: 2}
   previewObjectMaterialInvalid: {fileID: 2100000, guid: 53858b060aeec4945bef739b515ecf7d, type: 2}
   sittingPositionOffset: {x: 0, y: 0, z: 0.5}
-  bus: {fileID: 0}
+  bus: {fileID: 1094942733}
   topGridHeightOffset: 0.1
-  bottomGridHeightOffset: 0.52
+  bottomGridHeightOffset: 0.5
 --- !u!4 &1523455667
 Transform:
   m_ObjectHideFlags: 0
@@ -8197,7 +8197,7 @@ MonoBehaviour:
   scoreText: {fileID: 1290126423}
   scorePanel: {fileID: 496241785}
   timerText: {fileID: 1746864813}
-  initialMinutes: 0
+  initialMinutes: 1
   initialSeconds: 10
   Bus: {fileID: 1094942733}
 --- !u!4 &2133831068465030434
