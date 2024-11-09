@@ -73,13 +73,19 @@ public class NPCSpawner : MonoBehaviour
 
     IEnumerator MoveNPC(GameObject npc)
     {
+        // Ensure npc is valid
+        if (npc == null) yield break;
+
         NavMeshAgent agent = npc.GetComponent<NavMeshAgent>();
         Animator animator = npc.GetComponent<Animator>();
 
         yield return new WaitForSeconds(Random.Range(0f, moveInterval)); 
 
-        while (true)
+        while (npc != null)  // Check if npc is destroyed
         {
+            // Ensure npc is valid
+            if (npc == null) yield break;
+
             Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)).normalized;
             Vector3 newDestination = npc.transform.position + randomDirection * moveDistance;
 
@@ -104,11 +110,14 @@ public class NPCSpawner : MonoBehaviour
             }
 
             bool wasMoving = false;
-            while (!agent.pathStatus.Equals(NavMeshPathStatus.PathComplete) || 
-                agent.remainingDistance > agent.stoppingDistance)
+            while (npc != null && (!agent.pathStatus.Equals(NavMeshPathStatus.PathComplete) ||
+                    agent.remainingDistance > agent.stoppingDistance))
             {
+                // Ensure npc is valid
+                if (npc == null) yield break;
+
                 bool isMoving = agent.velocity.magnitude > movementThreshold;
-                
+
                 if (isMoving)
                 {
                     Vector3 direction = agent.velocity.normalized;

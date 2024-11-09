@@ -83,7 +83,6 @@ public class Placement : MonoBehaviour
 
         inputManager.OnClicked += PlaceStructure;
         inputManager.OnExit += StopPlacement;
-        inputManager.OnRotate += RotateStructure;
     }
 
     public void StartPlacement(GameObject npc)
@@ -115,35 +114,9 @@ public class Placement : MonoBehaviour
 
         inputManager.OnClicked += PlaceStructure;
         inputManager.OnExit += StopPlacement;
-        inputManager.OnRotate += RotateStructure;
     }
 
-    private void RotateStructure()
-    {
-        if (rotation < 3)
-            rotation += 1;
-        else
-            rotation = 0;
 
-        switch (rotation)
-        {
-            case 0:
-                objectOffset = new Vector3Int(0, 0, 0);
-                break;
-            case 1:
-                objectOffset = new Vector3Int(0, 0, 1);
-                break;
-            case 2:
-                objectOffset = new Vector3Int(1, 0, 1);
-                break;
-            case 3:
-                objectOffset = new Vector3Int(1, 0, 0);
-                break;
-        }
-
-        previewObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
-        previewObject.transform.position += grid.CellToWorld(objectOffset);
-    }
 
     private void PlaceStructure()
     {
@@ -185,7 +158,7 @@ public class Placement : MonoBehaviour
             {
                 Destroy(agent);
             }
-            if (peopleCounter != null && database.objectsData[selectedObjectIndex].Prefab.CompareTag("NPC"))
+            if (peopleCounter != null && database.objectsData[selectedObjectIndex].Prefab.CompareTag("Character"))
             {
                 peopleCounter.IncrementCount();
             }
@@ -269,7 +242,6 @@ public class Placement : MonoBehaviour
 
         inputManager.OnClicked -= PlaceStructure;
         inputManager.OnExit -= StopPlacement;
-        inputManager.OnRotate -= RotateStructure;
         
         originalNPC = null;
     }
@@ -289,6 +261,9 @@ public class Placement : MonoBehaviour
         Vector3 previewPosition = CalculateObjectPosition(gridPosition + objectOffset, isOverChair);
         previewObject.transform.position = previewPosition;
 
+        // Explicitly set preview object's rotation to match `rotation`.
+        previewObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
+
         Animator previewAnimator = previewObject.GetComponent<Animator>();
         if (previewAnimator != null)
         {
@@ -307,6 +282,7 @@ public class Placement : MonoBehaviour
 
         mouseIndicator.transform.position = mousePosition;
     }
+
 
     private bool CheckPreviewOverChair(Vector3Int gridPosition)
     {

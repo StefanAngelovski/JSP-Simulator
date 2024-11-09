@@ -189,6 +189,8 @@ public class ScoringSystem : MonoBehaviour
         {
             score += 10;
         }
+
+        DisplayScorePanel(score);
     }
 
     private void CheckForNeighbors(ObjectData newObject, GameObject newObjectGameObject, Vector3Int newPosition)
@@ -237,6 +239,8 @@ public class ScoringSystem : MonoBehaviour
         {
             seatedObjects.Remove(neighbor);
         }
+
+        DisplayScorePanel(score);
     }
 
     private Vector3Int GetIntegerPosition(Vector3 position)
@@ -280,6 +284,5 @@ public class ScoringSystem : MonoBehaviour
     private void DisplayScorePanel(int score)
     {
         scoreText.text = "Score: " + score.ToString();
-        Time.timeScale = 0;
     }
 }
