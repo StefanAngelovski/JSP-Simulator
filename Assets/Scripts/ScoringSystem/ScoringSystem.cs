@@ -33,7 +33,6 @@ public class ScoringSystem : MonoBehaviour
 
     public void Start()
     {
-        scorePanel.SetActive(false);
 
         if (Bus != null)
         {
@@ -282,6 +281,5 @@ public class ScoringSystem : MonoBehaviour
     {
         scoreText.text = "Score: " + score.ToString();
         Time.timeScale = 0;
-        scorePanel.SetActive(true);
     }
 }

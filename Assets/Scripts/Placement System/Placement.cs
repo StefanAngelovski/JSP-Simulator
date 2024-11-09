@@ -48,12 +48,20 @@ public class Placement : MonoBehaviour
     [SerializeField]
     private float bottomGridHeightOffset = 0.1f;
 
+    private PeopleCounter peopleCounter;
+
     private void Start()
     {
         previewObject = emptyPreviewObject;
         StopPlacement();
         gridData = new();
         cellIndicatorRenderer = cellIndicator.GetComponentInChildren<Renderer>();
+        
+        peopleCounter = FindFirstObjectByType<PeopleCounter>();
+        if (peopleCounter == null)
+        {
+            Debug.LogWarning("PeopleCounter not found in scene!");
+        }
     }
 
     public void StartPlacement(int ID)
@@ -99,7 +107,6 @@ public class Placement : MonoBehaviour
         previewObject = Instantiate(npc);
         previewObjectRenderers = previewObject.GetComponentsInChildren<Renderer>();
 
-        // Remove NavMeshAgent from preview
         NavMeshAgent previewAgent = previewObject.GetComponent<NavMeshAgent>();
         if (previewAgent != null)
         {
@@ -164,7 +171,11 @@ public class Placement : MonoBehaviour
             {
                 Destroy(navMeshAgent);
             }
-            Destroy(originalNPC); // Only destroy original after successful placement
+            if (peopleCounter != null)
+            {
+                peopleCounter.IncrementCount();
+            }
+            Destroy(originalNPC);
         }
         else
         {
@@ -173,6 +184,10 @@ public class Placement : MonoBehaviour
             if (agent != null)
             {
                 Destroy(agent);
+            }
+            if (peopleCounter != null && database.objectsData[selectedObjectIndex].Prefab.CompareTag("NPC"))
+            {
+                peopleCounter.IncrementCount();
             }
         }
 
@@ -256,11 +271,10 @@ public class Placement : MonoBehaviour
         inputManager.OnExit -= StopPlacement;
         inputManager.OnRotate -= RotateStructure;
         
-        // Don't destroy originalNPC when stopping placement
         originalNPC = null;
     }
 
-    void Update()
+    private void Update()
     {
         if (selectedObjectIndex < 0)
             return;
@@ -319,5 +333,14 @@ public class Placement : MonoBehaviour
         Vector3 position = grid.CellToWorld(gridPosition);
         position.y += isPlacingOnTop ? topGridHeightOffset : bottomGridHeightOffset;
         return position;
+    }
+
+    public void RemoveNPC(GameObject npc)
+    {
+        if (npc != null && peopleCounter != null && npc.CompareTag("NPC"))
+        {
+            peopleCounter.DecrementCount();
+        }
+        Destroy(npc);
     }
 }

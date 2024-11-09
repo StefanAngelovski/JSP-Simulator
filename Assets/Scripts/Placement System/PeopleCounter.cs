@@ -3,37 +3,34 @@ using TMPro;
 
 public class PeopleCounter : MonoBehaviour
 {
-    public TextMeshProUGUI peopleCountDisplay; // Reference to the UI Text component
-    private int peopleCount = 0; // Tracks the current number of people
+    public TextMeshProUGUI peopleCountDisplay; 
+    private int peopleCount = 0; 
 
     private void Start()
     {
-        UpdateDisplay(); // Initialize display on start
+        UpdateDisplay(); 
     }
 
-    // Method to increment the count
     public void IncrementCount()
     {
         peopleCount++;
-        UpdateDisplay(); // Update the UI after incrementing
+        UpdateDisplay(); 
     }
 
-    // Method to decrement the count
     public void DecrementCount()
     {
         if (peopleCount > 0)
         {
             peopleCount--;
-            UpdateDisplay(); // Update the UI after decrementing
+            UpdateDisplay();
         }
     }
 
-    // Method to update the UI display
     private void UpdateDisplay()
     {
         if (peopleCountDisplay != null)
         {
-            peopleCountDisplay.text = "People in Bus: " + peopleCount;
+            peopleCountDisplay.text = "TOTAL: " + peopleCount;
         }
     }
 }
