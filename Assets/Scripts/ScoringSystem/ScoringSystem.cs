@@ -12,12 +12,17 @@ public class ScoringSystem : MonoBehaviour
     public GameObject scorePanel;
     private int score = 0;
     private GameObject objectToRelocate;
+    //Game Over
+    public GameObject gameOver;
+    public TextMeshProUGUI gameOverText;
+    private int GameOverMinutes;
+    private int GameOverSeconds;
 
     public TextMeshProUGUI timerText;
 
     [SerializeField] private int initialMinutes = 1;
     [SerializeField] private int initialSeconds = 0;
-
+    
     private int minutes;
     private int seconds;
     private Coroutine countdownCoroutine;
@@ -31,58 +36,88 @@ public class ScoringSystem : MonoBehaviour
 
     private List<(ObjectData SeatedObject, GameObject ObjectGameObject, Vector3Int Position)> seatedObjects = new List<(ObjectData, GameObject, Vector3Int)>();
 
-    public void Start()
+  public void Start()
+{
+    score = 0;
+
+    if (Bus != null)
     {
-
-        if (Bus != null)
-        {
-            busAnimator = Bus.GetComponent<Animator>();
-        }
-
-        minutes = initialMinutes;
-        seconds = initialSeconds;
-
-        countdownCoroutine = StartCoroutine(CountdownTimer());
+        busAnimator = Bus.GetComponent<Animator>();
     }
 
-    private IEnumerator CountdownTimer()
+    // Initialize timer values
+    minutes = initialMinutes;
+    seconds = initialSeconds;
+
+    // Initialize GameOver timer
+    GameOverMinutes = 1;
+    GameOverSeconds = 0;
+
+    countdownCoroutine = StartCoroutine(CountdownTimer());
+}
+
+private IEnumerator CountdownTimer()
+{
+    while (true)
     {
-        while (true)
+            timerText.text = $"Shift ends in: {GameOverMinutes:00}:{GameOverSeconds:00}";
+
+        yield return new WaitForSeconds(1);
+
+        // Countdown for the bus timer
+        seconds--;
+        if (seconds < 0)
         {
-            if (isBusLeaving)
+            seconds = 59;
+            minutes--;
+            if (minutes < 0)
             {
-                timerText.text = $"Time until next bus arrives: {minutes:00}:{seconds:00}";
-            }
-            else if (isBusPresent)
-            {
-                timerText.text = $"Bus leaves in: {minutes:00}:{seconds:00}";
-            }
-            else
-            {
-                timerText.text = $"Time until next bus arrives: {minutes:00}:{seconds:00}";
-            }
+                minutes = initialMinutes;
+                seconds = initialSeconds;
 
-            yield return new WaitForSeconds(1);
-
-            seconds--;
-
-            if (seconds < 0)
-            {
-                seconds = 59;
-                minutes--;
-                if (minutes < 0)
+                if (busAnimator != null && isBusPresent && !isBusLeaving)
                 {
-                    minutes = initialMinutes;
-                    seconds = initialSeconds;
-
-                    if (busAnimator != null && isBusPresent && !isBusLeaving)
-                    {
-                        StartCoroutine(HandleBusDeparture());
-                    }
+                    ClearSeatedObjects();
+                    StartCoroutine(HandleBusDeparture());
                 }
             }
         }
+
+        // Countdown for the GameOver timer
+        GameOverSeconds--;
+        if (GameOverSeconds < 0)
+        {
+            GameOverSeconds = 59;
+            GameOverMinutes--;
+            if (GameOverMinutes < 0)
+            {
+                // Trigger Game Over logic
+                HandleGameOver();
+                yield break;
+            }
+        }
     }
+}
+
+private void HandleGameOver()
+{
+    // Stop all game activity
+    Time.timeScale = 0;
+
+    // Display the Game Over panel
+    if (gameOver != null)
+    {
+        gameOver.SetActive(true);
+    }
+
+    // Set the Game Over text
+    if (gameOverText != null)
+    {
+        gameOverText.text = "High score is 100";
+    }
+
+    Debug.Log("Game Over triggered. High score is 100.");
+}
 
     private IEnumerator HandleBusDeparture()
     {
@@ -92,13 +127,13 @@ public class ScoringSystem : MonoBehaviour
         busAnimator.ResetTrigger("IsComing");
         busAnimator.SetTrigger("IsLeaving");
 
-        float leavingAnimationDuration = 4f;
+        float leavingAnimationDuration = 1f;
         yield return new WaitForSeconds(leavingAnimationDuration);
 
         busAnimator.ResetTrigger("IsLeaving");
         isBusLeaving = false;
 
-        float delayBetweenBuses = 4f;
+        float delayBetweenBuses = 0f;
         yield return new WaitForSeconds(delayBetweenBuses);
 
         ClearSeatedObjects();
@@ -106,7 +141,7 @@ public class ScoringSystem : MonoBehaviour
         // Respawn NPCs after bus arrives back
         busAnimator.SetTrigger("IsComing");
 
-        float comingAnimationDuration = 4f;
+        float comingAnimationDuration = 1f;
         yield return new WaitForSeconds(comingAnimationDuration);
 
         busAnimator.ResetTrigger("IsComing");
@@ -213,8 +248,8 @@ public class ScoringSystem : MonoBehaviour
                     {
                         case "kid" when newObject.type == "elder":
                         case "elder" when newObject.type == "kid":
-                            StartTimer(newObjectGameObject, 0);
-                            score += 10;
+                            StartTimer(existingObject.ObjectGameObject, 0);
+                            score -= 10;
                             Debug.Log("Elder next to kid.");
                             break;
                         case "adult" when newObject.type == "adult":
@@ -258,28 +293,51 @@ public class ScoringSystem : MonoBehaviour
         Invoke(nameof(RelocateStoredObject), timer);
     }
 
-    private void RelocateStoredObject()
+private void RelocateStoredObject()
+{
+    if (objectToRelocate != null)
     {
-        if (objectToRelocate != null)
+        // Ensure the grids are properly configured
+        if (grid1 == null || grid2 == null)
         {
-            Vector3Int newPosition = GetRandomPositionWithinGrid();
-            objectToRelocate.transform.position = newPosition;
-            Debug.Log($"Object {objectToRelocate.name} relocated to {newPosition}");
+            Debug.LogWarning("Grids are not assigned. Cannot relocate object.");
+            return;
         }
-    }
 
-    private Vector3Int GetRandomPositionWithinGrid()
-    {
+        // Select a random grid
         GameObject selectedGrid = Random.value > 0.5f ? grid1 : grid2;
-        Renderer gridRenderer = selectedGrid.GetComponent<Renderer>();
-        Bounds gridBounds = gridRenderer.bounds;
 
-        int x = Mathf.RoundToInt(Random.Range(gridBounds.min.x, gridBounds.max.x));
-        int y = Mathf.RoundToInt(Random.Range(gridBounds.min.y, gridBounds.max.y));
-        int z = Mathf.RoundToInt(Random.Range(gridBounds.min.z, gridBounds.max.z));
+        // Calculate a new random position within the bounds of the grid
+        Vector3 newPosition = GetRandomPositionWithinGridBounds(selectedGrid);
 
-        return new Vector3Int(x, y, z);
+        // Move the object to the new position
+        objectToRelocate.transform.position = newPosition;
+
+        Debug.Log($"Object {objectToRelocate.name} relocated to {newPosition}");
     }
+}
+
+private Vector3 GetRandomPositionWithinGridBounds(GameObject grid)
+{
+    Renderer gridRenderer = grid.GetComponent<Renderer>();
+
+    // Ensure the grid has a renderer to determine its bounds
+    if (gridRenderer == null)
+    {
+        Debug.LogError("Grid does not have a Renderer component.");
+        return Vector3.zero;
+    }
+
+    Bounds bounds = gridRenderer.bounds;
+
+    // Generate a random position within the grid's bounds
+    float randomX = Random.Range(bounds.min.x, bounds.max.x);
+    float randomY = bounds.min.y; // Assuming the grid is flat on Y-axis
+    float randomZ = Random.Range(bounds.min.z, bounds.max.z);
+
+    return new Vector3(randomX, randomY, randomZ);
+}
+
 
     private void DisplayScorePanel(int score)
     {
