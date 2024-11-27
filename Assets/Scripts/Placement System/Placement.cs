@@ -130,7 +130,7 @@ public class Placement : MonoBehaviour
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
         Vector3Int placePosition = gridPosition + objectOffset;
 
-        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
+        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size);
 
         if (!placementValidity)
             return;
@@ -258,7 +258,7 @@ public class Placement : MonoBehaviour
         Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
 
-        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
+        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size);
         cellIndicatorRenderer.material.color = placementValidity ? Color.white : Color.red;
 
         bool isOverChair = CheckPreviewOverChair(gridPosition);
