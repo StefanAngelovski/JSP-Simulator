@@ -123,6 +123,9 @@ public class Placement : MonoBehaviour
         if (inputManager.IsPointerOverUI() || inputManager.IsPointerOverNPC())
             return;
 
+        if (selectedObjectIndex < 0)
+        return;
+
         Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
         Vector3Int placePosition = gridPosition + objectOffset;
@@ -166,7 +169,8 @@ public class Placement : MonoBehaviour
 
         newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
         newObject.transform.position = exactPosition;
-
+        
+        newObject.transform.SetParent(bus.transform);
         NPCBusMovement busMovement = newObject.AddComponent<NPCBusMovement>();
         busMovement.Initialize(bus.transform, grid.transform, exactPosition);
 
