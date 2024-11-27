@@ -20,8 +20,8 @@ public class ScoringSystem : MonoBehaviour
 
     public TextMeshProUGUI timerText;
 
-    [SerializeField] private int initialMinutes = 1;
-    [SerializeField] private int initialSeconds = 0;
+    [SerializeField] private int initialMinutes = 0;
+    [SerializeField] private int initialSeconds = 10;
     
     private int minutes;
     private int seconds;
@@ -246,8 +246,9 @@ private void HandleGameOver()
                 {
                     switch (existingObject.SeatedObject.type)
                     {
+                        //sit elder next to kid
                         case "kid" when newObject.type == "elder":
-                        case "elder" when newObject.type == "kid":
+                        //Relocate kid
                             StartTimer(existingObject.ObjectGameObject, 0);
                             score -= 10;
                             Debug.Log("Elder next to kid.");
@@ -293,50 +294,57 @@ private void HandleGameOver()
         Invoke(nameof(RelocateStoredObject), timer);
     }
 
+// Update this method to also handle ObjectData properly when relocating
 private void RelocateStoredObject()
 {
     if (objectToRelocate != null)
     {
-        // Ensure the grids are properly configured
-        if (grid1 == null || grid2 == null)
-        {
-            Debug.LogWarning("Grids are not assigned. Cannot relocate object.");
-            return;
-        }
+        // Store the original prefab and ObjectData before destroying
+        GameObject originalPrefab = objectToRelocate;
+        ObjectData originalObjectData = seatedObjects.Find(item => item.ObjectGameObject == originalPrefab).SeatedObject;
 
-        // Select a random grid
-        GameObject selectedGrid = Random.value > 0.5f ? grid1 : grid2;
+        // Destroy the object
+        Destroy(objectToRelocate);
+        Debug.Log($"Object {originalPrefab.name} has been destroyed.");
 
-        // Calculate a new random position within the bounds of the grid
-        Vector3 newPosition = GetRandomPositionWithinGridBounds(selectedGrid);
+        objectToRelocate = null; // Clear reference to the destroyed object
 
-        // Move the object to the new position
-        objectToRelocate.transform.position = newPosition;
+        // Respawn the object on grid1 at a random position
+        Vector3 randomPosition = GetRandomPositionWithinGridBounds(grid1);
+        objectToRelocate = Instantiate(originalPrefab, randomPosition, Quaternion.identity);
+        Debug.Log($"Object {originalPrefab.name} has been respawned at {randomPosition} on grid1.");
 
-        Debug.Log($"Object {objectToRelocate.name} relocated to {newPosition}");
+        // Add the relocated object back to seatedObjects with the same ObjectData
+        seatedObjects.Add((originalObjectData, objectToRelocate, GetIntegerPosition(randomPosition)));
+    }
+    else
+    {
+        Debug.LogWarning("No object is set to be destroyed.");
     }
 }
 
+
+
+// Helper method to get a random position within grid bounds
 private Vector3 GetRandomPositionWithinGridBounds(GameObject grid)
 {
     Renderer gridRenderer = grid.GetComponent<Renderer>();
 
-    // Ensure the grid has a renderer to determine its bounds
     if (gridRenderer == null)
     {
-        Debug.LogError("Grid does not have a Renderer component.");
+        Debug.LogError("Grid does not have a Renderer component to calculate bounds.");
         return Vector3.zero;
     }
 
     Bounds bounds = gridRenderer.bounds;
 
-    // Generate a random position within the grid's bounds
     float randomX = Random.Range(bounds.min.x, bounds.max.x);
-    float randomY = bounds.min.y; // Assuming the grid is flat on Y-axis
     float randomZ = Random.Range(bounds.min.z, bounds.max.z);
+    float y = bounds.center.y; // Assuming the object stays at the same height
 
-    return new Vector3(randomX, randomY, randomZ);
+    return new Vector3(randomX, y, randomZ);
 }
+
 
 
     private void DisplayScorePanel(int score)
