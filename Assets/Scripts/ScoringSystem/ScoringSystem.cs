@@ -158,7 +158,6 @@ private void HandleGameOver()
 
     private void ClearSeatedObjects()
     {
-
         if (countdownCoroutine != null)
         {
             StopCoroutine(countdownCoroutine);
@@ -170,14 +169,18 @@ private void HandleGameOver()
 
         countdownCoroutine = StartCoroutine(CountdownTimer());
 
-        foreach (var item in seatedObjects)
+        // Use the bus GameObject reference
+        if (Bus != null)
         {
-            Destroy(item.ObjectGameObject);
+            // Iterate through all children of the bus and destroy those that are NPCs
+            foreach (Transform child in Bus.transform)
+            {
+                if (child.CompareTag("Character")) // Assuming NPCs have the tag "NPC"
+                {
+                    Destroy(child.gameObject);
+                }
+            }
         }
-
-        seatedObjects.Clear();
-
-        Debug.Log("Seated objects list has been cleared, and all associated GameObjects have been destroyed.");
     }
 
     public void OnCharacterSeated(ObjectData seatedObject, GameObject objectGameObject, Vector3 position)

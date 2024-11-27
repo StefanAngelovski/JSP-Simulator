@@ -123,11 +123,14 @@ public class Placement : MonoBehaviour
         if (inputManager.IsPointerOverUI() || inputManager.IsPointerOverNPC())
             return;
 
+        if (selectedObjectIndex < 0)
+        return;
+
         Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
         Vector3Int placePosition = gridPosition + objectOffset;
 
-        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
+        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size);
 
         if (!placementValidity)
             return;
@@ -166,7 +169,8 @@ public class Placement : MonoBehaviour
 
         newObject.transform.rotation = Quaternion.Euler(0, rotation * 90, 0);
         newObject.transform.position = exactPosition;
-
+        
+        newObject.transform.SetParent(bus.transform);
         NPCBusMovement busMovement = newObject.AddComponent<NPCBusMovement>();
         busMovement.Initialize(bus.transform, grid.transform, exactPosition);
 
@@ -254,7 +258,7 @@ public class Placement : MonoBehaviour
         Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
 
-        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size, rotation);
+        bool placementValidity = gridData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size);
         cellIndicatorRenderer.material.color = placementValidity ? Color.white : Color.red;
 
         bool isOverChair = CheckPreviewOverChair(gridPosition);
