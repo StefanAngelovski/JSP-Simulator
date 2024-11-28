@@ -20,8 +20,8 @@ public class ScoringSystem : MonoBehaviour
 
     public TextMeshProUGUI timerText;
 
-    [SerializeField] private int initialMinutes = 0;
-    [SerializeField] private int initialSeconds = 10;
+    [SerializeField] private int initialMinutes = 1;
+    [SerializeField] private int initialSeconds = 0;
     
     private int minutes;
     private int seconds;
@@ -158,6 +158,7 @@ private void HandleGameOver()
 
     private void ClearSeatedObjects()
     {
+
         if (countdownCoroutine != null)
         {
             StopCoroutine(countdownCoroutine);
@@ -169,23 +170,20 @@ private void HandleGameOver()
 
         countdownCoroutine = StartCoroutine(CountdownTimer());
 
-        // Use the bus GameObject reference
-        if (Bus != null)
+        foreach (var item in seatedObjects)
         {
-            // Iterate through all children of the bus and destroy those that are NPCs
-            foreach (Transform child in Bus.transform)
-            {
-                if (child.CompareTag("Character")) // Assuming NPCs have the tag "NPC"
-                {
-                    Destroy(child.gameObject);
-                }
-            }
+            Destroy(item.ObjectGameObject);
         }
+
+        seatedObjects.Clear();
+
+        Debug.Log("Seated objects list has been cleared, and all associated GameObjects have been destroyed.");
     }
 
     public void OnCharacterSeated(ObjectData seatedObject, GameObject objectGameObject, Vector3 position)
     {
         Vector3Int objectPositionInt = GetIntegerPosition(position);
+        // Pass `seatedObject` directly instead of trying to retrieve it later
         seatedObjects.Add((seatedObject, objectGameObject, objectPositionInt));
 
         CheckPosition(seatedObject, objectPositionInt);
@@ -193,6 +191,7 @@ private void HandleGameOver()
 
         score = Mathf.Max(score, 0);
     }
+
 
     private void CheckPosition(ObjectData newObject, Vector3Int newPosition)
     {
@@ -249,10 +248,12 @@ private void HandleGameOver()
                 {
                     switch (existingObject.SeatedObject.type)
                     {
-                        //sit elder next to kid
-                        case "kid" when newObject.type == "elder":
-                        //Relocate kid
-                            StartTimer(existingObject.ObjectGameObject, 0);
+                        case "elder" when newObject.type == "police":
+                        StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, 0);
+                        break;
+                        case "elder" when newObject.type == "kid":
+                        //Relocate 
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, 0);
                             score -= 10;
                             Debug.Log("Elder next to kid.");
                             break;
@@ -265,7 +266,7 @@ private void HandleGameOver()
                             score -= 50;
                             break;
                         case "student" when newObject.type == "police":
-                            StartTimer(existingObject.ObjectGameObject, 0);
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, 0);
                             score -= 20;
                             Debug.Log("Police next to student.");
                             break;
@@ -291,63 +292,74 @@ private void HandleGameOver()
         );
     }
 
-    private void StartTimer(GameObject existingObject, int timer)
-    {
-        objectToRelocate = existingObject;
-        Invoke(nameof(RelocateStoredObject), timer);
-    }
+private void StartTimer(GameObject existingObject, ObjectData objectData, int timer)
+{
+    objectToRelocate = existingObject;
+    Invoke(nameof(RelocateStoredObject), timer);
+}
 
-// Update this method to also handle ObjectData properly when relocating
 private void RelocateStoredObject()
 {
     if (objectToRelocate != null)
     {
-        // Store the original prefab and ObjectData before destroying
-        GameObject originalPrefab = objectToRelocate;
-        ObjectData originalObjectData = seatedObjects.Find(item => item.ObjectGameObject == originalPrefab).SeatedObject;
+        // Ensure grids are properly configured
+        if (grid1 == null || grid2 == null)
+        {
+            Debug.LogWarning("Grids are not assigned. Cannot relocate object.");
+            return;
+        }
 
-        // Destroy the object
+        // Find the matching ObjectData in seatedObjects
+        var objectDataEntry = seatedObjects.Find(item => item.ObjectGameObject == objectToRelocate);
+        if (objectDataEntry.Equals(default((ObjectData, GameObject, Vector3Int))))
+        {
+            Debug.LogError("Failed to find ObjectData for relocation.");
+            return;
+        }
+
+        // Select a random grid
+        GameObject selectedGrid = Random.value > 0.5f ? grid1 : grid2;
+
+        // Calculate a new random position within the bounds of the grid
+        Vector3 newPosition = GetRandomPositionWithinGridBounds(selectedGrid);
+
+        // Destroy the existing object
+        seatedObjects.RemoveAll(item => item.ObjectGameObject == objectToRelocate);
         Destroy(objectToRelocate);
-        Debug.Log($"Object {originalPrefab.name} has been destroyed.");
 
-        objectToRelocate = null; // Clear reference to the destroyed object
+        // Create a new instance of the object at the new position
+        GameObject newObject = Instantiate(objectToRelocate, newPosition, Quaternion.identity);
 
-        // Respawn the object on grid1 at a random position
-        Vector3 randomPosition = GetRandomPositionWithinGridBounds(grid1);
-        objectToRelocate = Instantiate(originalPrefab, randomPosition, Quaternion.identity);
-        Debug.Log($"Object {originalPrefab.name} has been respawned at {randomPosition} on grid1.");
+        // Add the new object with the same ObjectData to seatedObjects
+        seatedObjects.Add((objectDataEntry.SeatedObject, newObject, GetIntegerPosition(newPosition)));
 
-        // Add the relocated object back to seatedObjects with the same ObjectData
-        seatedObjects.Add((originalObjectData, objectToRelocate, GetIntegerPosition(randomPosition)));
-    }
-    else
-    {
-        Debug.LogWarning("No object is set to be destroyed.");
+        Debug.Log($"Object relocated to {newPosition}");
     }
 }
 
 
 
-// Helper method to get a random position within grid bounds
+
 private Vector3 GetRandomPositionWithinGridBounds(GameObject grid)
 {
     Renderer gridRenderer = grid.GetComponent<Renderer>();
 
+    // Ensure the grid has a renderer to determine its bounds
     if (gridRenderer == null)
     {
-        Debug.LogError("Grid does not have a Renderer component to calculate bounds.");
+        Debug.LogError("Grid does not have a Renderer component.");
         return Vector3.zero;
     }
 
     Bounds bounds = gridRenderer.bounds;
 
+    // Generate a random position within the grid's bounds
     float randomX = Random.Range(bounds.min.x, bounds.max.x);
+    float randomY = bounds.min.y; // Assuming the grid is flat on Y-axis
     float randomZ = Random.Range(bounds.min.z, bounds.max.z);
-    float y = bounds.center.y; // Assuming the object stays at the same height
 
-    return new Vector3(randomX, y, randomZ);
+    return new Vector3(randomX, randomY, randomZ);
 }
-
 
 
     private void DisplayScorePanel(int score)
