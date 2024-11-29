@@ -77,7 +77,6 @@ private IEnumerator CountdownTimer()
 
                 if (busAnimator != null && isBusPresent && !isBusLeaving)
                 {
-                    ClearSeatedObjects();
                     StartCoroutine(HandleBusDeparture());
                 }
             }
@@ -136,7 +135,7 @@ private void HandleGameOver()
         float delayBetweenBuses = 0f;
         yield return new WaitForSeconds(delayBetweenBuses);
 
-        ClearSeatedObjects();
+        ClearAllObjects();
 
         // Respawn NPCs after bus arrives back
         busAnimator.SetTrigger("IsComing");
@@ -156,7 +155,7 @@ private void HandleGameOver()
 
 
 
-    private void ClearSeatedObjects()
+    private void ClearAllObjects()
     {
 
         if (countdownCoroutine != null)
@@ -170,14 +169,16 @@ private void HandleGameOver()
 
         countdownCoroutine = StartCoroutine(CountdownTimer());
 
-        foreach (var item in seatedObjects)
+        if (Bus != null)
         {
-            Destroy(item.ObjectGameObject);
+            foreach (Transform child in Bus.transform)
+            {
+                if (child.CompareTag("Character")) 
+                {
+                    Destroy(child.gameObject);
+                }
+            }
         }
-
-        seatedObjects.Clear();
-
-        Debug.Log("Seated objects list has been cleared, and all associated GameObjects have been destroyed.");
     }
 
     public void OnCharacterSeated(ObjectData seatedObject, GameObject objectGameObject, Vector3 position)
