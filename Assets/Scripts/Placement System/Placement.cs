@@ -43,10 +43,8 @@ public class Placement : MonoBehaviour
 
     private GameObject originalNPC;
 
-    [SerializeField]
     private float topGridHeightOffset = 0.1f;
-    [SerializeField]
-    private float bottomGridHeightOffset = 0.1f;
+    private float bottomGridHeightOffset = 0.4f;
 
     private PeopleCounter peopleCounter;
 
