@@ -249,18 +249,43 @@ private void HandleGameOver()
                 {
                     switch (existingObject.SeatedObject.type)
                     {
+                        //elder -> police == make the police relocate
                         case "elder" when newObject.type == "police":
-                        StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, 0);
-                        break;
-                        case "elder" when newObject.type == "kid":
-                        //Relocate 
-                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, 0);
-                            score -= 10;
-                            Debug.Log("Elder next to kid.");
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
+                            Destroy(existingObject.ObjectGameObject);
+                            neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
+                            score += 20;
                             break;
+
+                        case "elder" when newObject.type == "elder":
+                            score += 15;
+                            AddElder(existingObject.ObjectGameObject, existingObject.SeatedObject);
+                            break;
+
+                        //kid -> elder == make the kid relocate its seat or leave
+                        case "kid" when newObject.type == "elder":
+                            int decision = Random.Range(0,1);
+                            //kid leaves
+                            if(decision == 0){
+                                score -= 10;
+                                Destroy(existingObject.ObjectGameObject);
+                                neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));        
+                            }
+                            else{
+                                StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, 0);
+                                score -= 5;
+                                Debug.Log("Elder next to kid.");
+                            }                        
+                            break;
+
+
                         case "adult" when newObject.type == "adult":
                             score += 20;
                             break;
+
+                        case "police" when newObject.type == "police":
+                            break;
+
                         case "police" when newObject.type == "kid":
                             Destroy(existingObject.ObjectGameObject);
                             neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
@@ -283,6 +308,48 @@ private void HandleGameOver()
 
         DisplayScorePanel(score);
     }
+
+
+ private void AddElder(GameObject existingObject, ObjectData objectData){
+    if(existingObject == null){
+        Debug.LogError("Failed to find Object!");
+    }
+
+    else{
+        GameObject newGameObject = existingObject;
+
+        GameObject selectedGrid = Random.value > 0.5f ? grid1 : grid2;
+
+        Vector3 newPosition = GetRandomPositionWithinGridBounds(selectedGrid);
+
+        GameObject newObject = Instantiate(newGameObject, newPosition, Quaternion.identity);
+        newGameObject.transform.SetParent(Bus.transform);
+
+        var objectDataEntry = seatedObjects.Find(item => item.ObjectGameObject == existingObject);
+            if (objectDataEntry.Equals(default((ObjectData, GameObject, Vector3Int))))
+            {
+                Debug.LogError("Failed to find ObjectData for relocation.");
+                return;
+            }
+        
+        seatedObjects.Add((objectDataEntry.SeatedObject, newObject, GetIntegerPosition(newPosition)));
+    }
+ }
+
+private Vector3 GetRandomAdjacentPosition(Vector3 position)
+{
+    // Define possible directions to find adjacent positions (left, right, up, down, forward, back)
+    Vector3[] directions = {
+        Vector3.left, Vector3.right, Vector3.forward, Vector3.back, Vector3.up, Vector3.down
+    };
+
+    // Pick a random direction
+    Vector3 randomDirection = directions[Random.Range(0, directions.Length)];
+
+    // Return the new adjacent position
+    return position + randomDirection;
+}
+
 
     private Vector3Int GetIntegerPosition(Vector3 position)
     {
@@ -330,6 +397,9 @@ private void RelocateStoredObject()
 
         // Create a new instance of the object at the new position
         GameObject newObject = Instantiate(objectToRelocate, newPosition, Quaternion.identity);
+        
+        //Parent the new object to the Bus GameObject
+        newObject.transform.SetParent(Bus.transform);
 
         // Add the new object with the same ObjectData to seatedObjects
         seatedObjects.Add((objectDataEntry.SeatedObject, newObject, GetIntegerPosition(newPosition)));
