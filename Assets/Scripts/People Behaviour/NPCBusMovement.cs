@@ -8,6 +8,10 @@ public class NPCBusMovement : MonoBehaviour
     private bool isSeated = false;
     private Vector3 seatOffset;
 
+    private AudioSource audioSource; // Add an AudioSource reference
+    public AudioClip seatedSound; // Reference for seating sound (assign this in the Inspector)
+
+
     public void Initialize(Transform bus, Transform grid, Vector3 exactPlacementPosition)
     {
         busTransform = bus;
@@ -16,6 +20,9 @@ public class NPCBusMovement : MonoBehaviour
         initialGridOffset = exactPlacementPosition - bus.position;
         transform.position = exactPlacementPosition; // Set initial position exactly
         isInitialized = true;
+
+        // Ensure audioSource is attached to the NPC
+        audioSource = GetComponent<AudioSource>();
     }
 
     void LateUpdate()
@@ -42,6 +49,12 @@ public class NPCBusMovement : MonoBehaviour
             seatOffset = seatPositionOffset;
             // Update the initial offset to include the seat position
             initialGridOffset += seatPositionOffset;
+
+            if (audioSource != null && seatedSound != null)
+            {
+                audioSource.volume = 1f; // Make sure the volume is set to maximum
+                audioSource.PlayOneShot(seatedSound); // Play the seating sound
+            }
         }
         else
         {
