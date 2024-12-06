@@ -5,6 +5,9 @@ using UnityEngine.AI;
 public class Placement : MonoBehaviour
 {
     [SerializeField]
+    private AudioClip seatedSound;
+    private AudioSource audioSource;
+    [SerializeField]
     private GameObject mouseIndicator, cellIndicator;
     private Renderer cellIndicatorRenderer;
     [SerializeField]
@@ -60,6 +63,8 @@ public class Placement : MonoBehaviour
         {
             Debug.LogWarning("PeopleCounter not found in scene!");
         }
+        // Initialize AudioSource
+        audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     public void StartPlacement(int ID)
@@ -217,6 +222,11 @@ public class Placement : MonoBehaviour
                     ScoringSystem scoringSystem = FindFirstObjectByType<ScoringSystem>();
                     if (scoringSystem != null)
                     {
+                        // Play seated sound
+                        if (audioSource != null && seatedSound != null)
+                        {
+                            audioSource.PlayOneShot(seatedSound);
+                        }
                         scoringSystem.OnCharacterSeated(database.objectsData[selectedObjectIndex], placedObject, placedObject.transform.position);
                         break;
                     }
