@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class NPCSpawner : MonoBehaviour
 {
     public ObjectDatabaseSO objectDatabase;  
-    public int npcCount = 5;  // Desired number of NPCs
+    public int npcCount = 5;
     public Collider spawnArea;
     public float moveInterval = 2f;
     public float moveDistance = 5f;
@@ -20,11 +20,12 @@ public class NPCSpawner : MonoBehaviour
     void Start()
     {
         SpawnNPCs();
+        StartCoroutine(DespawningNPCs());  // Start the despawning coroutine
     }
 
     void SpawnNPCs()
     {
-        int currentNPCCount = spawnedNPCs.Count;
+        int currentNPCCount = Random.Range(0, spawnedNPCs.Count);
         for (int i = currentNPCCount; i < npcCount; i++)  // Spawn only missing NPCs
         {
             ObjectData npcData = objectDatabase.objectsData[Random.Range(0, objectDatabase.objectsData.Count)];
@@ -150,13 +151,31 @@ public class NPCSpawner : MonoBehaviour
         }
     }
 
-
     private bool DetectObstacle(Vector3 origin, Vector3 direction)
     {
         return Physics.Raycast(origin, direction, obstacleDetectionDistance);
     }
 
+    // New method to randomly despawn an NPC every 2 seconds
+    IEnumerator DespawningNPCs()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(Random.Range(2.5f,3.5f));  
 
+            if (spawnedNPCs.Count > 0)
+            {
+                int randomIndex = Random.Range(0, spawnedNPCs.Count);
+                GameObject npcToDespawn = spawnedNPCs[randomIndex];
+
+                if (npcToDespawn != null)
+                {
+                    spawnedNPCs.RemoveAt(randomIndex);
+                    Destroy(npcToDespawn);
+                }
+            }
+        }
+    }
 
     public void RestoreNPCCount()
     {

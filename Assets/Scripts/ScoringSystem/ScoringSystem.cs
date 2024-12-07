@@ -95,6 +95,10 @@ private IEnumerator CountdownTimer()
                 yield break;
             }
         }
+
+        if(npcSpawner != null){
+            npcSpawner.RestoreNPCCount();
+        }
     }
 }
 
@@ -145,12 +149,6 @@ private void HandleGameOver()
 
         busAnimator.ResetTrigger("IsComing");
         isBusPresent = true;
-
-        // Only restore NPC count after bus arrival
-        if (npcSpawner != null)
-        {
-            npcSpawner.RestoreNPCCount();
-        }
     }
 
 
@@ -249,50 +247,60 @@ private void HandleGameOver()
                 {
                     switch (existingObject.SeatedObject.type)
                     {
-                        //elder -> police == make the police relocate
-                        case "elder" when newObject.type == "police":
+                        //police -> elder == make the police relocate
+                        case "police" when newObject.type == "elder":
                             StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
                             Destroy(existingObject.ObjectGameObject);
                             neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
                             score += 20;
                             break;
 
+                        //elder -> elder
                         case "elder" when newObject.type == "elder":
-                            score += 15;
-                            AddElder(existingObject.ObjectGameObject, existingObject.SeatedObject);
+                            score += 5;
                             break;
-
-                        //kid -> elder == make the kid relocate its seat or leave
-                        case "kid" when newObject.type == "elder":
-                            int decision = Random.Range(0,1);
-                            //kid leaves
-                            if(decision == 0){
-                                score -= 10;
+                        
+                        //kid -> elder == make the kid relocate
+                            case "kid" when newObject.type == "elder":
+                                StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
                                 Destroy(existingObject.ObjectGameObject);
-                                neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));        
-                            }
-                            else{
-                                StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, 0);
-                                score -= 5;
-                                Debug.Log("Elder next to kid.");
-                            }                        
-                            break;
+                                neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
+                                score -= 20;
+                                break;
 
-
-                        case "adult" when newObject.type == "adult":
-                            score += 20;
-                            break;
-
-                        case "police" when newObject.type == "police":
+                        //elder -> student == make the student relocate with a delay
+                            case "student" when newObject.type == "elder":
+                                int number = Random.Range(0,5);
+                                if(number >= 2){
+                                Destroy(existingObject.ObjectGameObject);
+                                neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
+                                }
+                                else{
+                                StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(2,3));
+                                }
+                                score -= 15;
+                                break;
+                        
+                        //elder -> adult == make the adult relocate but give points
+                            case "elder" when newObject.type == "adult":
+                                StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
+                                score += 15;
+                                break;
+                        //kid -> police == make the police relocate
+                        case "kid" when newObject.type == "police":
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
+                            score -= 5;
                             break;
 
                         case "police" when newObject.type == "kid":
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
+                            score -= 15;
+                            break;
+
+                        case "student" when newObject.type == "police":
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(2,3));
                             Destroy(existingObject.ObjectGameObject);
                             neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
-                            score -= 50;
-                            break;
-                        case "student" when newObject.type == "police":
-                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, 0);
                             score -= 20;
                             Debug.Log("Police next to student.");
                             break;
@@ -309,32 +317,6 @@ private void HandleGameOver()
         DisplayScorePanel(score);
     }
 
-
- private void AddElder(GameObject existingObject, ObjectData objectData){
-    if(existingObject == null){
-        Debug.LogError("Failed to find Object!");
-    }
-
-    else{
-        GameObject newGameObject = existingObject;
-
-        GameObject selectedGrid = Random.value > 0.5f ? grid1 : grid2;
-
-        Vector3 newPosition = GetRandomPositionWithinGridBounds(selectedGrid);
-
-        GameObject newObject = Instantiate(newGameObject, newPosition, Quaternion.identity);
-        newGameObject.transform.SetParent(Bus.transform);
-
-        var objectDataEntry = seatedObjects.Find(item => item.ObjectGameObject == existingObject);
-            if (objectDataEntry.Equals(default((ObjectData, GameObject, Vector3Int))))
-            {
-                Debug.LogError("Failed to find ObjectData for relocation.");
-                return;
-            }
-        
-        seatedObjects.Add((objectDataEntry.SeatedObject, newObject, GetIntegerPosition(newPosition)));
-    }
- }
 
 private Vector3 GetRandomAdjacentPosition(Vector3 position)
 {
