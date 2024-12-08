@@ -7,7 +7,8 @@ public class PlayGame : MonoBehaviour
     private AudioSource audioSource;
     public AudioClip audioClip;            
     public Animator buttonAnimator;         
-    public float sceneLoadDelay = 0.5f;      
+    public float sceneLoadDelay = 0.5f; 
+    public string Scene;     
 
     private void Start()
     {
@@ -57,6 +58,6 @@ public class PlayGame : MonoBehaviour
     private IEnumerator LoadSceneWithDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
-        SceneManager.LoadScene("PhysGame");
+        SceneManager.LoadScene(Scene);
     }
 }

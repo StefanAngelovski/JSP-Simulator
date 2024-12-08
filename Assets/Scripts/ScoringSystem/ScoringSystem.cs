@@ -20,7 +20,7 @@ public class ScoringSystem : MonoBehaviour
 
     public TextMeshProUGUI timerText;
 
-    [SerializeField] private int initialMinutes = 1;
+    [SerializeField] private int initialMinutes = 2;
     [SerializeField] private int initialSeconds = 0;
     
     private int minutes;
@@ -50,7 +50,7 @@ public class ScoringSystem : MonoBehaviour
     seconds = initialSeconds;
 
     // Initialize GameOver timer
-    GameOverMinutes = 1;
+    GameOverMinutes = 2;
     GameOverSeconds = 0;
 
     countdownCoroutine = StartCoroutine(CountdownTimer());
@@ -60,6 +60,10 @@ private IEnumerator CountdownTimer()
 {
     while (true)
     {
+
+        if(npcSpawner.npcCount >= 10){
+            HandleGameOver();
+        }
             timerText.text = $"Shift ends in: {GameOverMinutes:00}:{GameOverSeconds:00}";
 
         yield return new WaitForSeconds(1);
@@ -116,7 +120,7 @@ private void HandleGameOver()
     // Set the Game Over text
     if (gameOverText != null)
     {
-        gameOverText.text = "High score is 100";
+        gameOverText.text = "High score is "+score;
     }
 
     Debug.Log("Game Over triggered. High score is 100.");

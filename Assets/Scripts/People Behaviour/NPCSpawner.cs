@@ -20,15 +20,20 @@ public class NPCSpawner : MonoBehaviour
     void Start()
     {
         SpawnNPCs();
-        StartCoroutine(DespawningNPCs());  // Start the despawning coroutine
+        StartCoroutine(DespawningNPCs());
+        StartCoroutine(IncreateNPCCountOverTime());
     }
 
     void SpawnNPCs()
     {
-        int currentNPCCount = Random.Range(0, spawnedNPCs.Count);
-        for (int i = currentNPCCount; i < npcCount; i++)  // Spawn only missing NPCs
-        {
-            ObjectData npcData = objectDatabase.objectsData[Random.Range(0, objectDatabase.objectsData.Count)];
+        int currentNPCCount = spawnedNPCs.Count;
+        for(int i = 0; i < currentNPCCount; i++){
+            SpawnSingleNPC();
+        }
+    }
+
+    void SpawnSingleNPC(){
+        ObjectData npcData = objectDatabase.objectsData[Random.Range(0, objectDatabase.objectsData.Count)];
             GameObject npcPrefab = npcData.Prefab; 
             Vector3 randomPosition = GetRandomPositionInCollider();
             GameObject npc = Instantiate(npcPrefab, randomPosition, Quaternion.identity);
@@ -42,7 +47,6 @@ public class NPCSpawner : MonoBehaviour
             }
             
             StartCoroutine(MoveNPC(npc));
-        }
     }
 
     Vector3 GetRandomPositionInCollider()
@@ -156,12 +160,12 @@ public class NPCSpawner : MonoBehaviour
         return Physics.Raycast(origin, direction, obstacleDetectionDistance);
     }
 
-    // New method to randomly despawn an NPC every 2 seconds
+    
     IEnumerator DespawningNPCs()
     {
         while (true)
         {
-            yield return new WaitForSeconds(Random.Range(2.5f,3.5f));  
+            yield return new WaitForSeconds(Random.Range(3.5f,8.5f));  
 
             if (spawnedNPCs.Count > 0)
             {
@@ -202,6 +206,17 @@ public class NPCSpawner : MonoBehaviour
             }
 
             StartCoroutine(MoveNPC(npc));
+        }
+    }
+
+    IEnumerator IncreateNPCCountOverTime(){
+        while(true){
+            yield return new WaitForSeconds(Random.Range(5f, 8f));
+            npcCount += Random.Range(1,2);
+            
+            for(int i =0; i < Random.Range(1,2); i++){
+                SpawnSingleNPC();
+            }
         }
     }
 }
