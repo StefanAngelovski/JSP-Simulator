@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class MenuButton : MonoBehaviour
 {
@@ -9,9 +10,43 @@ public class MenuButton : MonoBehaviour
     [SerializeField] private int thisIndex;
     [SerializeField] private GameObject currentGameObject;
     [SerializeField] private GameObject nextGameObject;
-    [SerializeField] private string sceneToLoad;
     [SerializeField] private bool isQuitButton;
     [SerializeField] private bool isExtras;
+
+    // Added from PlayGame
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip audioClip;
+    [SerializeField] private float sceneLoadDelay = 0.5f;
+    [SerializeField] private string sceneToLoad;
+
+    private void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+
+        if (audioSource != null && audioClip != null)
+        {
+            audioSource.clip = audioClip;
+            audioSource.Play();
+        }
+        else if (audioClip == null)
+        {
+            Debug.LogWarning("No AudioClip assigned to play.");
+        }
+        else
+        {
+            Debug.LogWarning("No AudioSource component found on this GameObject.");
+        }
+
+        if (animator != null)
+        {
+            animator.SetBool("selected", true);
+        }
+        else
+        {
+            Debug.LogWarning("No Animator component assigned for the button.");
+        }
+    }
+
     void Update()
     {
         if (menuButtonController.index == thisIndex)
@@ -22,7 +57,6 @@ public class MenuButton : MonoBehaviour
             {
                 animator.SetBool("pressed", true);
 
-
                 if (isQuitButton)
                 {
                     QuitGame();
@@ -31,7 +65,10 @@ public class MenuButton : MonoBehaviour
                 {
                     currentGameObject.SetActive(false);
                     nextGameObject.SetActive(true);
-
+                }
+                else
+                {
+                    StartCoroutine(LoadSceneWithDelay(sceneLoadDelay));
                 }
             }
             else if (animator.GetBool("pressed"))
@@ -42,33 +79,22 @@ public class MenuButton : MonoBehaviour
         }
         else
         {
-            animator.SetBool("selected",
- false);
+            animator.SetBool("selected", false);
         }
     }
 
-    public void LoadScene()
+    private IEnumerator LoadSceneWithDelay(float delay)
     {
+        yield return new WaitForSeconds(delay);
         SceneManager.LoadScene(sceneToLoad);
     }
 
     public void QuitGame()
     {
-
-        // If we're running in the editor, stop playing
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        // Otherwise, quit the application
-        Application.Quit();
-#endif
-
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
         #else
             Application.Quit();
         #endif
-
     }
-
 }

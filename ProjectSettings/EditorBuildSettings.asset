@@ -9,8 +9,8 @@ EditorBuildSettings:
     path: Assets/Scenes/NewMainMenu.unity
     guid: 1e8f19e1c63d740479f6135b9c87d93c
   - enabled: 1
-    path: Assets/Scenes/PhysGame.unity
-    guid: 298c3722f2d817a4ea893b024e61f143
+    path: Assets/Scenes/MainScene.unity
+    guid: 6d3da546d9014d04ea5119ca1e452b5e
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
