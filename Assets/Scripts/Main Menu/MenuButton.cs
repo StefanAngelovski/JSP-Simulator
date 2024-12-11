@@ -19,9 +19,14 @@ public class MenuButton : MonoBehaviour
     [SerializeField] private float sceneLoadDelay = 0.5f;
     [SerializeField] private string sceneToLoad;
 
+    private bool canPressButton = true;
+    private Menu menu;
+
     private void Start()
     {
+        menuButtonController = GetComponentInParent<MenuButtonController>();
         audioSource = GetComponent<AudioSource>();
+        menu = GetComponent<Menu>(); // Get the Menu component attached to the button
 
         if (audioSource != null && audioClip != null)
         {
@@ -49,7 +54,7 @@ public class MenuButton : MonoBehaviour
 
     void Update()
     {
-        if (menuButtonController.index == thisIndex)
+        if (menuButtonController.index == thisIndex && canPressButton)
         {
             animator.SetBool("selected", true);
 
@@ -63,8 +68,17 @@ public class MenuButton : MonoBehaviour
                 }
                 else if (isExtras)
                 {
-                    currentGameObject.SetActive(false);
-                    nextGameObject.SetActive(true);
+                    if (menu != null && menu.isLastExtrasPage)
+                    {
+                        // Do not reset the menu if it's the last page
+                        Debug.Log("Last extras page reached, not resetting the menu.");
+                        StartCoroutine(DisableButtonPressForSeconds(2f));
+                    }
+                    else
+                    {
+                        currentGameObject.SetActive(false);
+                        nextGameObject.SetActive(true);
+                    }
                 }
                 else
                 {
@@ -96,5 +110,12 @@ public class MenuButton : MonoBehaviour
         #else
             Application.Quit();
         #endif
+    }
+
+    private IEnumerator DisableButtonPressForSeconds(float seconds)
+    {
+        canPressButton = false;
+        yield return new WaitForSeconds(seconds);
+        canPressButton = true;
     }
 }

@@ -7,7 +7,7 @@ public class Menu : MonoBehaviour
     [SerializeField] private GameObject current;
     [SerializeField] private GameObject next;
     [SerializeField] private GameObject mainMenu;
-    [SerializeField] private bool isLastExtrasPage;
+    [SerializeField] public bool isLastExtrasPage;
     [SerializeField] private float transitionDelay = 1f;
     [SerializeField] private float buttonCooldown = 0.5f; // Cooldown duration in seconds
 
@@ -39,25 +39,21 @@ public class Menu : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Return) && buttonAnimator != null)
         {
-            if (Time.time - lastButtonPressTime < buttonCooldown)
-            {
-                Debug.Log("Button press ignored due to cooldown");
+            if (Time.time - lastButtonPressTime < buttonCooldown){
                 return;
             }
 
             lastButtonPressTime = Time.time;
-            buttonAnimator.SetBool("pressed", true);
+
 
             if (isLastExtrasPage)
             {
                 if (!lastPageClicked)
                 {
                     lastPageClicked = true;
-                    Debug.Log("Last page clicked, waiting for next click to transition to main menu");
                 }
                 else
                 {
-                    Debug.Log("Transitioning to main menu");
                     StartCoroutine(TransitionToMainMenu());
                 }
             }
@@ -72,24 +68,23 @@ public class Menu : MonoBehaviour
         {
             buttonAnimator.SetBool("pressed", false);
         }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            RemoveCurrentPage();
+        }
     }
 
     private IEnumerator TransitionToMainMenu()
     {
         current.SetActive(false);
-        Debug.Log("Current deactivated, waiting for " + transitionDelay + " seconds");
-
+        mainMenu.SetActive(true);
         yield return new WaitForSeconds(transitionDelay);
-        Debug.Log("Delay completed");
+    }
 
-        if (mainMenu != null)
-        {
-            mainMenu.SetActive(true);
-            Debug.Log("Main menu activated");
-        }
-        else
-        {
-            Debug.LogError("Main menu reference is null!");
-        }
+    private void RemoveCurrentPage()
+    {
+        current.SetActive(false);
+        mainMenu.SetActive(true);
     }
 }
