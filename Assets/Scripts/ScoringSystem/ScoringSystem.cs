@@ -33,6 +33,7 @@ public class ScoringSystem : MonoBehaviour
     private bool isBusLeaving = false;
     private bool isBusPresent = true;
     public NPCSpawner npcSpawner; 
+    
 
     private List<(ObjectData SeatedObject, GameObject ObjectGameObject, Vector3Int Position)> seatedObjects = new List<(ObjectData, GameObject, Vector3Int)>();
 
@@ -61,7 +62,7 @@ private IEnumerator CountdownTimer()
     while (true)
     {
 
-        if(npcSpawner.npcCount >= 10){
+        if(npcSpawner.npcCount >= 15){
             HandleGameOver();
         }
             timerText.text = $"Shift ends in: {GameOverMinutes:00}:{GameOverSeconds:00}";
@@ -158,7 +159,7 @@ private void HandleGameOver()
 
 
     private void ClearAllObjects()
-    {
+    {   
 
         if (countdownCoroutine != null)
         {
