@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class NPCSpawner : MonoBehaviour
 {
     public ObjectDatabaseSO objectDatabase;  
-    public int npcCount = 5;
+    public int npcCount = 3;
     public Collider spawnArea;
     public float moveInterval = 2f;
     public float moveDistance = 5f;
@@ -165,7 +165,7 @@ public class NPCSpawner : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(Random.Range(3.5f,8.5f));  
+            yield return new WaitForSeconds(Random.Range(5f,6f));  
 
             if (spawnedNPCs.Count > 0)
             {

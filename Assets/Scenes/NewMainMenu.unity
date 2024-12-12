@@ -450,11 +450,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buttonAnimator: {fileID: 1100441768}
   current: {fileID: 414461237}
-  next: {fileID: 2112916451}
-  mainMenu: {fileID: 2112916451}
+  next: {fileID: 0}
+  mainMenu: {fileID: 0}
   isLastExtrasPage: 1
   transitionDelay: 1
   buttonCooldown: 0.5
+  targetSceneName: MainScene
 --- !u!1 &69349296
 GameObject:
   m_ObjectHideFlags: 0
@@ -1499,6 +1500,7 @@ MonoBehaviour:
   isLastExtrasPage: 0
   transitionDelay: 1
   buttonCooldown: 0.5
+  targetSceneName: 
 --- !u!1 &392806419 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1785517602351419879, guid: ab1f5d203e125ad43bea2f73621abc8d, type: 3}
@@ -3990,6 +3992,7 @@ MonoBehaviour:
   isLastExtrasPage: 0
   transitionDelay: 1
   buttonCooldown: 0.5
+  targetSceneName: 
 --- !u!1 &1104805493
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement; // Import the SceneManager namespace
 
 public class Menu : MonoBehaviour
 {
@@ -9,7 +10,8 @@ public class Menu : MonoBehaviour
     [SerializeField] private GameObject mainMenu;
     [SerializeField] public bool isLastExtrasPage;
     [SerializeField] private float transitionDelay = 1f;
-    [SerializeField] private float buttonCooldown = 0.5f; // Cooldown duration in seconds
+    [SerializeField] private float buttonCooldown = 0.5f;
+    [SerializeField] private string targetSceneName; // Name of the scene to load
 
     private bool lastPageClicked = false;
     private float lastButtonPressTime = 0f;
@@ -32,31 +34,25 @@ public class Menu : MonoBehaviour
     {
         if (current == null) Debug.LogError("Current GameObject is not assigned");
         if (next == null && !isLastExtrasPage) Debug.LogError("Next GameObject is not assigned");
-        if (mainMenu == null && isLastExtrasPage) Debug.LogError("Main Menu GameObject is not assigned");
+        if (mainMenu == null && isLastExtrasPage && string.IsNullOrEmpty(targetSceneName)) 
+            Debug.LogError("Main Menu or Target Scene Name is not assigned");
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Return) && buttonAnimator != null)
         {
-            if (Time.time - lastButtonPressTime < buttonCooldown){
+            if (Time.time - lastButtonPressTime < buttonCooldown)
+            {
                 return;
             }
 
             lastButtonPressTime = Time.time;
 
-
             if (isLastExtrasPage)
-            {
-                if (!lastPageClicked)
                 {
-                    lastPageClicked = true;
+                    StartCoroutine(TransitionToAnotherScene());
                 }
-                else
-                {
-                    StartCoroutine(TransitionToMainMenu());
-                }
-            }
             else
             {
                 current.SetActive(false);
@@ -75,11 +71,20 @@ public class Menu : MonoBehaviour
         }
     }
 
-    private IEnumerator TransitionToMainMenu()
+    private IEnumerator TransitionToAnotherScene()
     {
-        current.SetActive(false);
-        mainMenu.SetActive(true);
+        // Play transition delay (if needed)
         yield return new WaitForSeconds(transitionDelay);
+
+        // Load the target scene
+        if (!string.IsNullOrEmpty(targetSceneName))
+        {
+            SceneManager.LoadScene(targetSceneName);
+        }
+        else
+        {
+            Debug.LogError("Target scene name is not set!");
+        }
     }
 
     private void RemoveCurrentPage()
