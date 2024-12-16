@@ -13,7 +13,6 @@ public class Menu : MonoBehaviour
     [SerializeField] private float buttonCooldown = 0.5f;
     [SerializeField] private string targetSceneName; // Name of the scene to load
 
-    private bool lastPageClicked = false;
     private float lastButtonPressTime = 0f;
 
     private void Start()

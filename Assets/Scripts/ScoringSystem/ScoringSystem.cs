@@ -34,6 +34,7 @@ public class ScoringSystem : MonoBehaviour
     private bool isBusPresent = true;
     public NPCSpawner npcSpawner; 
     
+    private Placement placementSystem;
 
     private List<(ObjectData SeatedObject, GameObject ObjectGameObject, Vector3Int Position)> seatedObjects = new List<(ObjectData, GameObject, Vector3Int)>();
 
@@ -55,6 +56,8 @@ public class ScoringSystem : MonoBehaviour
     GameOverSeconds = 0;
 
     countdownCoroutine = StartCoroutine(CountdownTimer());
+
+    placementSystem = FindFirstObjectByType<Placement>();
 }
 
 private IEnumerator CountdownTimer()
@@ -171,6 +174,11 @@ private void HandleGameOver()
         seconds = initialSeconds;
 
         countdownCoroutine = StartCoroutine(CountdownTimer());
+
+        if (placementSystem != null)
+        {
+            placementSystem.ClearAllPlacedObjects();
+        }
 
         if (Bus != null)
         {
@@ -372,23 +380,13 @@ private void RelocateStoredObject()
             return;
         }
 
-        // Select a random grid
         GameObject selectedGrid = Random.value > 0.5f ? grid1 : grid2;
-
-        // Calculate a new random position within the bounds of the grid
         Vector3 newPosition = GetRandomPositionWithinGridBounds(selectedGrid);
-
-        // Destroy the existing object
         seatedObjects.RemoveAll(item => item.ObjectGameObject == objectToRelocate);
         Destroy(objectToRelocate);
-
-        // Create a new instance of the object at the new position
         GameObject newObject = Instantiate(objectToRelocate, newPosition, Quaternion.identity);
         
-        //Parent the new object to the Bus GameObject
         newObject.transform.SetParent(Bus.transform);
-
-        // Add the new object with the same ObjectData to seatedObjects
         seatedObjects.Add((objectDataEntry.SeatedObject, newObject, GetIntegerPosition(newPosition)));
 
         Debug.Log($"Object relocated to {newPosition}");

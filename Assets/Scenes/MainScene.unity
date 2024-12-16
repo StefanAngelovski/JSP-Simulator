@@ -1301,7 +1301,7 @@ PrefabInstance:
       objectReference: {fileID: 212347478}
     - target: {fileID: 5625706357737672203, guid: 95f1ff41f3e31ba48aaa4c01941dff07, type: 3}
       propertyPath: m_Name
-      value: pAUSE BUTTON
+      value: Pause button
       objectReference: {fileID: 0}
     - target: {fileID: 7248948747636171616, guid: 95f1ff41f3e31ba48aaa4c01941dff07, type: 3}
       propertyPath: m_Text
@@ -7431,7 +7431,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00018310547, y: 0.0002746582}
+  m_AnchoredPosition: {x: 0.00018310547, y: 0.00024414062}
   m_SizeDelta: {x: 123.37, y: 522.79}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1615552485

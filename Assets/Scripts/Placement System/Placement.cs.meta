@@ -1,23 +1,2 @@
 fileFormatVersion: 2
 guid: 1b9620903a110bb43ab2e03257d0f876
-MonoImporter:
-  externalObjects: {}
-  serializedVersion: 2
-  defaultReferences:
-  - seatedSound: {fileID: 8300000, guid: 6d94691cc6706064795290249978f4db, type: 3}
-  - mouseIndicator: {instanceID: 0}
-  - cellIndicator: {instanceID: 0}
-  - inputManager: {instanceID: 0}
-  - grid: {instanceID: 0}
-  - database: {instanceID: 0}
-  - gridVisualisationTop: {instanceID: 0}
-  - gridVisualisationBottom: {instanceID: 0}
-  - emptyPreviewObject: {instanceID: 0}
-  - previewObjectMaterialValid: {instanceID: 0}
-  - previewObjectMaterialInvalid: {instanceID: 0}
-  - bus: {instanceID: 0}
-  executionOrder: 0
-  icon: {instanceID: 0}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 

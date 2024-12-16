@@ -235,6 +235,12 @@ public class Placement : MonoBehaviour
         }
     }
 
+    public void ClearAllPlacedObjects()
+    {
+        gridData = new GridData();
+        placedGameObjects.Clear();
+    }
+
     private void StopPlacement()
     {
         selectedObjectIndex = -1;

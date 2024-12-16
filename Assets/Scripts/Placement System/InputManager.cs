@@ -15,7 +15,7 @@ public class InputManager : MonoBehaviour
 
     private Vector3 lastMousePosition;
 
-    public event Action OnClicked, OnExit, OnRotate;
+    public event Action OnClicked, OnExit;
 
     void Update()
     {
@@ -24,9 +24,6 @@ public class InputManager : MonoBehaviour
         }
         if(Input.GetKeyDown(KeyCode.Escape)){
             OnExit?.Invoke();
-        }
-        if(Input.GetKeyDown(KeyCode.R)){
-            OnRotate?.Invoke();
         }
     }
 
