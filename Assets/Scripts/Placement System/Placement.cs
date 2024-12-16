@@ -82,6 +82,7 @@ public class Placement : MonoBehaviour
 
         previewObject.SetActive(true);
         previewObject = Instantiate(database.objectsData[selectedObjectIndex].Prefab);
+        previewObject.layer = LayerMask.NameToLayer("Ignore Raycast");
         previewObjectRenderers = previewObject.GetComponentsInChildren<Renderer>();
 
         inputManager.OnClicked += PlaceStructure;
@@ -107,6 +108,7 @@ public class Placement : MonoBehaviour
         cellIndicator.SetActive(true);
 
         previewObject = Instantiate(npc);
+        previewObject.layer = LayerMask.NameToLayer("Ignore Raycast");
         previewObjectRenderers = previewObject.GetComponentsInChildren<Renderer>();
 
         NavMeshAgent previewAgent = previewObject.GetComponent<NavMeshAgent>();
