@@ -158,9 +158,7 @@ GameObject:
   - component: {fileID: 4685598878629226683}
   - component: {fileID: 743189633325182047}
   - component: {fileID: 6507774724114978144}
-  - component: {fileID: 5567419850077918328}
   - component: {fileID: 8630971081149537653}
-  - component: {fileID: 8652866061371262264}
   m_Layer: 5
   m_Name: New Game Button
   m_TagString: Untagged
@@ -220,20 +218,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &5567419850077918328
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5625706357737672203}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dce8674ab06ca40cea0d93549e34c9d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  menuButtonController: {fileID: 0}
-  disableOnce: 0
 --- !u!114 &8630971081149537653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -278,27 +262,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &8652866061371262264
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5625706357737672203}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a0cab851de1814bf186b265818a3836d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  menuButtonController: {fileID: 0}
-  animator: {fileID: 6507774724114978144}
-  animatorFunctions: {fileID: 5567419850077918328}
-  thisIndex: 0
-  currentGameObject: {fileID: 0}
-  nextGameObject: {fileID: 0}
-  sceneToLoad: PhysGame
-  isQuitButton: 0
-  isExtras: 0
 --- !u!1 &7965377102547999209
 GameObject:
   m_ObjectHideFlags: 0

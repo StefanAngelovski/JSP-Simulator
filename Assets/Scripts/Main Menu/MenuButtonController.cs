@@ -15,13 +15,20 @@ public class MenuButtonController : MonoBehaviour {
     }
 
     private void HandleInput() {
-        if (Input.GetKeyDown(KeyCode.DownArrow)) {
-            index = (index < maxIndex) ? index + 1 : 0;
-        	audioSource.Play();
+        // Changed to GetKeyDown which works during pause
+        if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) {
+            if (index < maxIndex)
+                index++;
+            else
+                index = 0;
+            audioSource.Play();
         }
-        else if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            index = (index > 0) ? index - 1 : maxIndex;
-        	audioSource.Play();
+        else if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) {
+            if (index > 0)
+                index--;
+            else
+                index = maxIndex;
+            audioSource.Play();
         }
     }
 }

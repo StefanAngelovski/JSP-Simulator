@@ -26,25 +26,21 @@ public class MenuButton : MonoBehaviour
     {
         menuButtonController = GetComponentInParent<MenuButtonController>();
         audioSource = GetComponent<AudioSource>();
-        menu = GetComponent<Menu>(); // Get the Menu component attached to the button
+        menu = GetComponent<Menu>(); 
 
-        if (audioSource != null && audioClip != null)
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        if (audioClip != null)
         {
             audioSource.clip = audioClip;
-            audioSource.Play();
-        }
-        else if (audioClip == null)
-        {
-            Debug.LogWarning("No AudioClip assigned to play.");
-        }
-        else
-        {
-            Debug.LogWarning("No AudioSource component found on this GameObject.");
         }
 
         if (animator != null)
         {
-            animator.SetBool("selected", true);
+            animator.updateMode = AnimatorUpdateMode.UnscaledTime;
         }
         else
         {
@@ -56,12 +52,8 @@ public class MenuButton : MonoBehaviour
     {
         if (menuButtonController.index == thisIndex && canPressButton)
         {
-            animator.SetBool("selected", true);
-
-            if (Input.GetAxis("Submit") == 1)
+            if (Input.GetButtonDown("Submit"))  
             {
-                animator.SetBool("pressed", true);
-
                 if (isQuitButton)
                 {
                     QuitGame();
@@ -70,7 +62,6 @@ public class MenuButton : MonoBehaviour
                 {
                     if (menu != null && menu.isLastExtrasPage)
                     {
-                        // Do not reset the menu if it's the last page
                         Debug.Log("Last extras page reached, not resetting the menu.");
                         StartCoroutine(DisableButtonPressForSeconds(2f));
                     }
@@ -85,21 +76,15 @@ public class MenuButton : MonoBehaviour
                     StartCoroutine(LoadSceneWithDelay(sceneLoadDelay));
                 }
             }
-            else if (animator.GetBool("pressed"))
-            {
-                animator.SetBool("pressed", false);
-                animatorFunctions.disableOnce = true;
-            }
-        }
-        else
-        {
-            animator.SetBool("selected", false);
         }
     }
 
     private IEnumerator LoadSceneWithDelay(float delay)
     {
-        yield return new WaitForSeconds(delay);
+        yield return new WaitForSecondsRealtime(delay);
+        Time.timeScale = 1f;  // Unpause the game
+        AudioListener.pause = false;  // Unpause audio
+        Time.timeScale = 1;  
         SceneManager.LoadScene(sceneToLoad);
     }
 
@@ -115,7 +100,15 @@ public class MenuButton : MonoBehaviour
     private IEnumerator DisableButtonPressForSeconds(float seconds)
     {
         canPressButton = false;
-        yield return new WaitForSeconds(seconds);
+        yield return new WaitForSecondsRealtime(seconds);
         canPressButton = true;
+    }
+
+    public void PlaySound()
+    {
+        if (audioSource != null && audioSource.clip != null)
+        {
+            audioSource.PlayOneShot(audioSource.clip);
+        }
     }
 }
