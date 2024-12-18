@@ -41,4 +41,4 @@ Special thanks to:
 - Stefan Angelovski
 - Berat Ahmetaj
 
-[Link To Itch.io](itch.io)
+[Link To Itch.io](https://beratahmetaj.itch.io/once-upon-a-jsp)
