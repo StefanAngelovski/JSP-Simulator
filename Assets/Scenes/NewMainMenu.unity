@@ -1725,7 +1725,7 @@ RectTransform:
   m_GameObject: {fileID: 414461237}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.81438, y: 0.81438, z: 0.81438}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 21279576}
@@ -2553,7 +2553,7 @@ RectTransform:
   m_GameObject: {fileID: 799987265}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.81438, y: 0.81438, z: 0.81438}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 387993890}
@@ -2796,7 +2796,7 @@ RectTransform:
   m_GameObject: {fileID: 854637929}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.81438, y: 0.81438, z: 0.81438}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1100441763}
@@ -3510,7 +3510,7 @@ RectTransform:
   m_GameObject: {fileID: 992030019}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.81438, y: 0.81438, z: 0.81438}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3151687612166213950}
@@ -6996,7 +6996,7 @@ RectTransform:
   m_GameObject: {fileID: 2112916451}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.81438, y: 0.81438, z: 0.81438}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3827138144489484482}
@@ -7694,6 +7694,7 @@ MonoBehaviour:
   nextGameObject: {fileID: 799987265}
   isQuitButton: 1
   isExtras: 0
+  isPauseMenuButton: 0
   audioSource: {fileID: 392806424}
   audioClip: {fileID: 8300000, guid: da1b160ba7e6b4bf0a40defe83b864d4, type: 3}
   sceneLoadDelay: 0.5
@@ -7886,6 +7887,7 @@ MonoBehaviour:
   nextGameObject: {fileID: 5738389408551545372}
   isQuitButton: 0
   isExtras: 0
+  isPauseMenuButton: 0
   audioSource: {fileID: 392806424}
   audioClip: {fileID: 8300000, guid: da1b160ba7e6b4bf0a40defe83b864d4, type: 3}
   sceneLoadDelay: 0.5
@@ -8503,6 +8505,7 @@ MonoBehaviour:
   nextGameObject: {fileID: 799987265}
   isQuitButton: 0
   isExtras: 1
+  isPauseMenuButton: 0
   audioSource: {fileID: 392806424}
   audioClip: {fileID: 8300000, guid: da1b160ba7e6b4bf0a40defe83b864d4, type: 3}
   sceneLoadDelay: 0.5

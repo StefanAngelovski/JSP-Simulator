@@ -8582,6 +8582,7 @@ MonoBehaviour:
   nextGameObject: {fileID: 2059159987}
   isQuitButton: 0
   isExtras: 0
+  isPauseMenuButton: 1
   audioSource: {fileID: 1179910441}
   audioClip: {fileID: 8300000, guid: da1b160ba7e6b4bf0a40defe83b864d4, type: 3}
   sceneLoadDelay: 0.5

@@ -12,6 +12,7 @@ public class MenuButton : MonoBehaviour
     [SerializeField] private GameObject nextGameObject;
     [SerializeField] private bool isQuitButton;
     [SerializeField] private bool isExtras;
+    [SerializeField] private bool isPauseMenuButton = false;
 
     // Added from PlayGame
     [SerializeField] private AudioSource audioSource;
@@ -40,7 +41,15 @@ public class MenuButton : MonoBehaviour
 
         if (animator != null)
         {
-            animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+            if (isPauseMenuButton)
+            {
+                animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+            }
+            else
+            {
+                animator.SetBool("selected", false);
+                animator.SetBool("pressed", false);
+            }
         }
         else
         {
@@ -52,8 +61,18 @@ public class MenuButton : MonoBehaviour
     {
         if (menuButtonController.index == thisIndex && canPressButton)
         {
+            if (!isPauseMenuButton)
+            {
+                animator.SetBool("selected", true);
+            }
+
             if (Input.GetButtonDown("Submit"))  
             {
+                if (!isPauseMenuButton)
+                {
+                    animator.SetBool("pressed", true);
+                }
+
                 if (isQuitButton)
                 {
                     QuitGame();
@@ -76,6 +95,15 @@ public class MenuButton : MonoBehaviour
                     StartCoroutine(LoadSceneWithDelay(sceneLoadDelay));
                 }
             }
+            else if (!isPauseMenuButton && animator.GetBool("pressed"))
+            {
+                animator.SetBool("pressed", false);
+                animatorFunctions.disableOnce = true;
+            }
+        }
+        else if (!isPauseMenuButton)
+        {
+            animator.SetBool("selected", false);
         }
     }
 
@@ -84,7 +112,7 @@ public class MenuButton : MonoBehaviour
         yield return new WaitForSecondsRealtime(delay);
         Time.timeScale = 1f;  // Unpause the game
         AudioListener.pause = false;  // Unpause audio
-        Time.timeScale = 1;  
+        
         SceneManager.LoadScene(sceneToLoad);
     }
 

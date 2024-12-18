@@ -42,17 +42,15 @@ public class GameControl : MonoBehaviour
             }
         }
 
-        if (pauseMenu != null)
-        {
-            var menuButtons = pauseMenu.GetComponentsInChildren<MenuButton>(true);
-            foreach (var button in menuButtons)
-            {
-                if (button.GetComponent<Animator>() != null)
-                {
-                    button.GetComponent<Animator>().updateMode = AnimatorUpdateMode.UnscaledTime;
-                }
-            }
-        }
+        // Remove this section as it's no longer needed - buttons handle their own animation mode
+        // if (pauseMenu != null) {
+        //     var menuButtons = pauseMenu.GetComponentsInChildren<MenuButton>(true);
+        //     foreach (var button in menuButtons) {
+        //         if (button.GetComponent<Animator>() != null) {
+        //             button.GetComponent<Animator>().updateMode = AnimatorUpdateMode.UnscaledTime;
+        //         }
+        //     }
+        // }
     }
 
     void RestartScene()
