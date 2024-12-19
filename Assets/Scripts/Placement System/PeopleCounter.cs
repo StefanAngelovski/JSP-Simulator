@@ -30,7 +30,7 @@ public class PeopleCounter : MonoBehaviour
     {
         if (peopleCountDisplay != null)
         {
-            peopleCountDisplay.text = "TOTAL: " + peopleCount;
+            peopleCountDisplay.text = peopleCount.ToString();
         }
     }
 }

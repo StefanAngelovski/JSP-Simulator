@@ -1,2 +1,23 @@
 fileFormatVersion: 2
 guid: a96aaafac30af0846be9e9155e30d663
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - grid1: {instanceID: 0}
+  - grid2: {instanceID: 0}
+  - scoreText: {instanceID: 0}
+  - scorePanel: {instanceID: 0}
+  - gameOver: {instanceID: 0}
+  - gameOverText: {instanceID: 0}
+  - timerText: {instanceID: 0}
+  - Bus: {instanceID: 0}
+  - npcSpawner: {instanceID: 0}
+  - notificationPanel: {instanceID: 0}
+  - notificationPrefab: {instanceID: 0}
+  - scoreRawImageController: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

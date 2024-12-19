@@ -11,6 +11,8 @@ public class ScoringSystem : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public GameObject scorePanel;
     private int score = 0;
+    private int previousScore = 0;
+
     private GameObject objectToRelocate;
     //Game Over
     public GameObject gameOver;
@@ -32,13 +34,47 @@ public class ScoringSystem : MonoBehaviour
 
     private bool isBusLeaving = false;
     private bool isBusPresent = true;
-    public NPCSpawner npcSpawner; 
-    
+    public NPCSpawner npcSpawner;
+
+    public GameObject notificationPanel; // Reference to the NotificationPanel
+    public GameObject notificationPrefab; // Prefab for the notification message
+    public TextMeshProUGUI NotificationText;
+
+    public ScoreRawImageController scoreRawImageController; // Reference to the ScoreRawImageController script
+
+
     private Placement placementSystem;
 
     private List<(ObjectData SeatedObject, GameObject ObjectGameObject, Vector3Int Position)> seatedObjects = new List<(ObjectData, GameObject, Vector3Int)>();
 
-  public void Start()
+    private void AddNotification(string message)
+    {
+        if (notificationPanel == null || notificationPrefab == null)
+        {
+            Debug.LogError("NotificationPanel or NotificationPrefab is not assigned.");
+            return;
+        }
+        NotificationText.text = message.ToString();
+        /*
+        // Create a new notification object
+        GameObject newNotification = Instantiate(notificationPrefab, notificationPanel.transform);
+
+        // Set the text of the notification
+        TextMeshProUGUI textComponent = newNotification.GetComponent<TextMeshProUGUI>();
+        if (textComponent != null)
+        {
+            textComponent.text = message;
+        }
+        else
+        {
+            Debug.LogError("NotificationPrefab is missing a TextMeshProUGUI component.");
+        }
+
+        // Optionally, destroy the notification after a delay
+        Destroy(newNotification, 3f);*/
+    }
+
+    public void Start()
 {
     score = 0;
 
@@ -207,6 +243,8 @@ private void HandleGameOver()
 
     private void CheckPosition(ObjectData newObject, Vector3Int newPosition)
     {
+        // Store the previous score before changes
+        int oldScore = score;
         // Position preference handling
         // Adult seat preferences
         if (newObject.type == "adult" &&
@@ -215,6 +253,8 @@ private void HandleGameOver()
         {
             score += 10;
             Debug.Log("Adult placed on the right spot.");
+            scoreRawImageController.ShowScoreUpImage();
+
         }
 
         // Elder seat preferences
@@ -223,6 +263,8 @@ private void HandleGameOver()
         {
             score += 10;
             Debug.Log("Elder placed on the right spot.");
+            scoreRawImageController.ShowScoreUpImage();
+
         }
 
         // Kid or student preferences
@@ -231,22 +273,30 @@ private void HandleGameOver()
         {
             score += 10;
             Debug.Log("Kid placed on the right spot.");
+            scoreRawImageController.ShowScoreUpImage();
+
         }
 
         // Police preferences
         if (newObject.type == "police" && newPosition.z <= 26)
         {
             score += 10;
+            scoreRawImageController.ShowScoreUpImage();
+
         }
 
+
         DisplayScorePanel(score);
+
+        // Update the previous score
+        previousScore = score;
     }
 
     private void CheckForNeighbors(ObjectData newObject, GameObject newObjectGameObject, Vector3Int newPosition)
     {
         Vector3Int[] directions = {
-            Vector3Int.left, Vector3Int.right, Vector3Int.back, Vector3Int.forward
-        };
+        Vector3Int.left, Vector3Int.right, Vector3Int.back, Vector3Int.forward
+    };
 
         List<(ObjectData, GameObject, Vector3Int)> neighborsToRemove = new List<(ObjectData, GameObject, Vector3Int)>();
 
@@ -260,66 +310,81 @@ private void HandleGameOver()
                 {
                     switch (existingObject.SeatedObject.type)
                     {
-                        //police -> elder == make the police relocate
-                        case "police" when newObject.type == "elder":
-                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
-                            Destroy(existingObject.ObjectGameObject);
-                            neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
-                            score += 20;
-                            break;
-
-                        //elder -> elder
+                        // Elder seated next to elder
                         case "elder" when newObject.type == "elder":
                             score += 5;
-                            break;
-                        
-                        //kid -> elder == make the kid relocate
-                            case "kid" when newObject.type == "elder":
-                                StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
-                                Destroy(existingObject.ObjectGameObject);
-                                neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
-                                score -= 20;
-                                break;
-
-                        //elder -> student == make the student relocate with a delay
-                            case "student" when newObject.type == "elder":
-                                int number = Random.Range(0,5);
-                                if(number >= 2){
-                                Destroy(existingObject.ObjectGameObject);
-                                neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
-                                }
-                                else{
-                                StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(2,3));
-                                }
-                                score -= 15;
-                                break;
-                        
-                        //elder -> adult == make the adult relocate but give points
-                            case "elder" when newObject.type == "adult":
-                                StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
-                                score += 15;
-                                break;
-                        //kid -> police == make the police relocate
-                        case "kid" when newObject.type == "police":
-                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
-                            score -= 5;
+                            AddNotification("Granma Reunion! +5!");
                             break;
 
-                        case "police" when newObject.type == "kid":
-                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0,1));
-                            score -= 15;
+                        // Police seated next to elder
+                        case "police" when newObject.type == "elder":
+                            score += 20;
+                            AddNotification("Order restored! Police love elders. +20!");
                             break;
 
-                        case "student" when newObject.type == "police":
-                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(2,3));
+                        // Kid seated next to elder (relocate the kid)
+                        case "kid" when newObject.type == "elder":
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0, 1));
                             Destroy(existingObject.ObjectGameObject);
                             neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
                             score -= 20;
-                            Debug.Log("Police next to student.");
+                            AddNotification("Kid annoyed by elder stories. -20!");
                             break;
+
+                        // Student seated next to elder
+                        case "student" when newObject.type == "elder":
+                            int delayChance = Random.Range(0, 5);
+                            if (delayChance >= 2)
+                            {
+                                Destroy(existingObject.ObjectGameObject);
+                                neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
+                                AddNotification("Elder told the student to find another seat. -15!");
+                            }
+                            else
+                            {
+                                StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(2, 3));
+                                AddNotification("Elder scolded the student! -15!");
+                            }
+                            score -= 15;
+                            break;
+
+                        // Elder seated next to adult
+                        case "elder" when newObject.type == "adult":
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0, 1));
+                            score += 15;
+                            AddNotification("Adult is charmed by elder wisdom! +15!");
+                            break;
+
+                        // Police seated next to kid
+                        case "police" when newObject.type == "kid":
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(0, 1));
+                            score -= 5;
+                            AddNotification("Kid feels under surveillance! -5!");
+                            break;
+
+                        // Student seated next to police
+                        case "student" when newObject.type == "police":
+                            StartTimer(existingObject.ObjectGameObject, existingObject.SeatedObject, Random.Range(2, 3));
+                            Destroy(existingObject.ObjectGameObject);
+                            neighborsToRemove.Add((newObject, newObjectGameObject, newPosition));
+                            score -= 20;
+                            AddNotification("Police busted the student! -20!");
+                            break;
+
+                            // Add more specific cases here as needed
                     }
                 }
             }
+        }
+
+        // Check if the score increased or decreased
+        if (score > previousScore)
+        {
+            scoreRawImageController.ShowScoreUpImage();
+        }
+        else if (score < previousScore)
+        {
+            scoreRawImageController.ShowScoreDownImage();
         }
 
         foreach (var neighbor in neighborsToRemove)
@@ -328,10 +393,13 @@ private void HandleGameOver()
         }
 
         DisplayScorePanel(score);
+        previousScore = score;
+
     }
 
 
-private Vector3 GetRandomAdjacentPosition(Vector3 position)
+
+    private Vector3 GetRandomAdjacentPosition(Vector3 position)
 {
     // Define possible directions to find adjacent positions (left, right, up, down, forward, back)
     Vector3[] directions = {
@@ -420,6 +488,6 @@ private Vector3 GetRandomPositionWithinGridBounds(GameObject grid)
 
     private void DisplayScorePanel(int score)
     {
-        scoreText.text = "Score: " + score.ToString();
+        scoreText.text = score.ToString();
     }
 }
