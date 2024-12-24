@@ -51,6 +51,8 @@ public class Placement : MonoBehaviour
 
     private PeopleCounter peopleCounter;
 
+    private bool isPlacementActive = false;
+
     private void Start()
     {
         previewObject = emptyPreviewObject;
@@ -69,6 +71,8 @@ public class Placement : MonoBehaviour
 
     public void StartPlacement(int ID)
     {
+        if (isPlacementActive) return;
+
         StopPlacement();
         selectedObjectIndex = database.objectsData.FindIndex(data => data.ID == ID);
         if (selectedObjectIndex < 0)
@@ -76,6 +80,7 @@ public class Placement : MonoBehaviour
             return;
         }
 
+        isPlacementActive = true;
         gridVisualisationTop.SetActive(true);
         gridVisualisationBottom.SetActive(true);
         cellIndicator.SetActive(true);
@@ -91,6 +96,8 @@ public class Placement : MonoBehaviour
 
     public void StartPlacement(GameObject npc)
     {
+        if (isPlacementActive) return;
+
         StopPlacement();
 
         ObjectData npcData = database.objectsData.Find(data => data.Prefab.name == npc.name.Replace("(Clone)", ""));
@@ -103,6 +110,7 @@ public class Placement : MonoBehaviour
         selectedObjectIndex = database.objectsData.FindIndex(data => data.ID == npcData.ID);
         originalNPC = npc;
 
+        isPlacementActive = true;
         gridVisualisationTop.SetActive(true);
         gridVisualisationBottom.SetActive(true);
         cellIndicator.SetActive(true);
@@ -246,6 +254,7 @@ public class Placement : MonoBehaviour
     private void StopPlacement()
     {
         selectedObjectIndex = -1;
+        isPlacementActive = false;
         gridVisualisationTop.SetActive(false);
         gridVisualisationBottom.SetActive(false);
         cellIndicator.SetActive(false);
