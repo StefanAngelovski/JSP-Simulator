@@ -171,6 +171,13 @@ private void HandleGameOver()
         isBusLeaving = true;
         isBusPresent = false;
 
+        // Hide preview when bus is leaving
+        if (placementSystem != null)
+        {
+            placementSystem.StopPlacement();
+            placementSystem.enabled = false;
+        }
+
         busAnimator.ResetTrigger("IsComing");
         busAnimator.SetTrigger("IsLeaving");
 
@@ -193,6 +200,12 @@ private void HandleGameOver()
 
         busAnimator.ResetTrigger("IsComing");
         isBusPresent = true;
+
+        // Re-enable placement system when bus arrives
+        if (placementSystem != null)
+        {
+            placementSystem.enabled = true;
+        }
     }
 
 
