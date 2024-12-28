@@ -49,8 +49,11 @@ using TMPro;
 
         private List<(ObjectData SeatedObject, GameObject ObjectGameObject, Vector3Int Position)> seatedObjects = new List<(ObjectData, GameObject, Vector3Int)>();
 
+        public TextMeshProUGUI TotalBusStopsText;
+        public TextMeshProUGUI CurrentStationText;
 
-        private void AddNotification(string message)
+
+    private void AddNotification(string message)
         {
             if (notificationPanel == null || notificationPrefab == null)
             {
@@ -77,6 +80,8 @@ using TMPro;
         // Set the initial bus count
         int busCount = SharedGameData.BusCount; // Retrieve the value
         SetBusCount(busCount); // Call your method to set the bus count
+        TotalBusStopsText.text = "0"+"/"+ busCount.ToString(); // Update the UI text
+        CurrentStationText.text = "Current Station:" + SharedGameData.Municipalities[0]; // Update the UI text
 
         if (Bus != null)
             {
@@ -118,7 +123,9 @@ using TMPro;
                             if (busAnimator != null && isBusPresent && !isBusLeaving)
                             {
                                 StartCoroutine(HandleBusDeparture());
-                            }
+                                TotalBusStopsText.text = (busCount - remainingBuses).ToString() + "/" + busCount.ToString();
+                            CurrentStationText.text = "Current Station:"+SharedGameData.Municipalities[busCount - remainingBuses];
+                        }
                         }
                         else
                         {

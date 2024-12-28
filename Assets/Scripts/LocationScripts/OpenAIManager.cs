@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;  
 
 
 public class OpenAIManager : MonoBehaviour
@@ -18,7 +19,10 @@ public class OpenAIManager : MonoBehaviour
     public TMP_InputField inputField;
     public Button submitButton;
 
-    private string openAIKey = "OPEN AI KEY";
+    // New TextMeshProUGUI field for outputting pass/fail message
+    public TextMeshProUGUI resultText;
+
+    private string openAIKey = "OPEN API KEY";
     private string openAIEndpoint = "https://api.openai.com/v1/chat/completions";  // Correct endpoint for GPT-3.5-turbo
 
     void Start()
@@ -98,7 +102,9 @@ public class OpenAIManager : MonoBehaviour
 
                 // Show appropriate image based on result
                 SetTexture(successImageUI);
+                resultText.text = locationCount + " BUS STOPS";
 
+                SharedGameData.Municipalities = new List<string>(message.Split(','));
                 SharedGameData.BusCount = locationCount; // Store the value in the static class
                 StartCoroutine(LoadMainSceneAfterDelay(2f));
 
@@ -107,6 +113,7 @@ public class OpenAIManager : MonoBehaviour
             {
                 Debug.LogError("Error: No valid message found in the response.");
                 SetTexture(failureImageUI);
+                resultText.text = "NOT VALID";
 
                 SharedGameData.BusCount = 3; // Store the value in the static class
                 StartCoroutine(LoadMainSceneAfterDelay(2f));
@@ -117,6 +124,7 @@ public class OpenAIManager : MonoBehaviour
         {
             Debug.LogError("Error: " + request.error);
             SetTexture(failureImageUI);
+            resultText.text = "NOT VALID";
 
             SharedGameData.BusCount = 3; // Store the value in the static class
             StartCoroutine(LoadMainSceneAfterDelay(2f));

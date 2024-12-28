@@ -455,7 +455,7 @@ MonoBehaviour:
   isLastExtrasPage: 1
   transitionDelay: 1
   buttonCooldown: 0.5
-  targetSceneName: MainScene
+  targetSceneName: LocationAI
 --- !u!1 &69349296
 GameObject:
   m_ObjectHideFlags: 0
@@ -7891,7 +7891,7 @@ MonoBehaviour:
   audioSource: {fileID: 392806424}
   audioClip: {fileID: 8300000, guid: da1b160ba7e6b4bf0a40defe83b864d4, type: 3}
   sceneLoadDelay: 0.5
-  sceneToLoad: MainScene
+  sceneToLoad: LocationAI
 --- !u!224 &4749964925805560930
 RectTransform:
   m_ObjectHideFlags: 0
