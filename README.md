@@ -15,7 +15,7 @@ The game explores the theme of "SPACE" by focusing on **fitting people into limi
   - **Grid System:** A robust system for seat allocation on the bus.  
   - **Animation & Physics:** Built with Unity's rigid body system for smooth interactions.  
 
-![Gif](https://github.com/vuevskiN/GameJam/blob/master/GitFiles/2.gif)
+![Gif](https://github.com/vuevskiN/GameJam/blob/master/GitFiles/4.gif)
 
 ## Built With  
 - **Engine:** [Unity](https://unity.com/)  
