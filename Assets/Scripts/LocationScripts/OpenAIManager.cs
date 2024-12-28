@@ -3,6 +3,8 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
+
 
 public class OpenAIManager : MonoBehaviour
 {
@@ -16,7 +18,7 @@ public class OpenAIManager : MonoBehaviour
     public TMP_InputField inputField;
     public Button submitButton;
 
-    private string openAIKey = "OPENAI-KEY";
+    private string openAIKey = "OPEN AI KEY";
     private string openAIEndpoint = "https://api.openai.com/v1/chat/completions";  // Correct endpoint for GPT-3.5-turbo
 
     void Start()
@@ -60,8 +62,8 @@ public class OpenAIManager : MonoBehaviour
     private IEnumerator SendToOpenAI(string userInput)
     {
         string jsonData = "{\"model\": \"gpt-3.5-turbo\", \"messages\": [" +
-                          "{\"role\": \"system\", \"content\": \"You reply only with municipality names and ',' between them.\"}," +
-                          "{\"role\": \"user\", \"content\": \"i am in centar in skopje, im going to give you a municipality, reply to me in one line telling me all municipalities that i need to go through to get to the one i want, only one line with delimiter ',', dont ignore instruction. Here is where i want to go to: " + userInput + "\"}]," +
+                          "{\"role\": \"system\", \"content\": \"You reply only what you are asked\"}," +
+                          "{\"role\": \"user\", \"content\": \"i am in municipality centar in skopje, im going to give you a municipality, reply to me in one line telling me all municipalities that i need to go through to get from centar to the one i want, only one line with delimiter ','. Here is where i want to go to: " + userInput + "\"}]," +
                           "\"max_tokens\": 50}";
 
         // Only one declaration of bodyRaw
@@ -96,17 +98,28 @@ public class OpenAIManager : MonoBehaviour
 
                 // Show appropriate image based on result
                 SetTexture(successImageUI);
+
+                SharedGameData.BusCount = locationCount; // Store the value in the static class
+                StartCoroutine(LoadMainSceneAfterDelay(2f));
+
             }
             else
             {
                 Debug.LogError("Error: No valid message found in the response.");
                 SetTexture(failureImageUI);
+
+                SharedGameData.BusCount = 3; // Store the value in the static class
+                StartCoroutine(LoadMainSceneAfterDelay(2f));
+
             }
         }
         else
         {
             Debug.LogError("Error: " + request.error);
             SetTexture(failureImageUI);
+
+            SharedGameData.BusCount = 3; // Store the value in the static class
+            StartCoroutine(LoadMainSceneAfterDelay(2f));
         }
 
         yield break; // End the coroutine
@@ -122,6 +135,12 @@ public class OpenAIManager : MonoBehaviour
         {
             Debug.LogError("RawImage or Texture not assigned correctly.");
         }
+    }
+
+    private IEnumerator LoadMainSceneAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SceneManager.LoadScene("MainScene");
     }
 
     // JSON response structure
