@@ -16,7 +16,7 @@ public class OpenAIManager : MonoBehaviour
     public TMP_InputField inputField;
     public Button submitButton;
 
-    private string openAIKey = "API KEY";
+    private string openAIKey = "OPENAI-KEY";
     private string openAIEndpoint = "https://api.openai.com/v1/chat/completions";  // Correct endpoint for GPT-3.5-turbo
 
     void Start()
@@ -90,6 +90,9 @@ public class OpenAIManager : MonoBehaviour
             {
                 string message = jsonResponse.choices[0].message.content;
                 Debug.Log("OpenAI message: " + message); // Log the message content from OpenAI
+
+                int locationCount = message.Split(',').Length;
+                Debug.Log("Total number of locations: " + locationCount);
 
                 // Show appropriate image based on result
                 SetTexture(successImageUI);
