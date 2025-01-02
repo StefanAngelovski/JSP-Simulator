@@ -36,9 +36,5 @@ Special thanks to:
 - **[Regional Game Jam](https://itch.io/jam/gogamejam2024) - Empowering The Next Generation of Game Developers**  
 - **Galactic Omnivore, USAID, and IESC** for organizing this inspiring event.
 
-## Team
-- Nikita Vuevski 
-- Stefan Angelovski
-- Berat Ahmetaj
 
 [Link To Itch.io](https://beratahmetaj.itch.io/jsp-simulator)
