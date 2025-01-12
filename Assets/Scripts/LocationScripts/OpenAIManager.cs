@@ -22,6 +22,8 @@ public class OpenAIManager : MonoBehaviour
     // New TextMeshProUGUI field for outputting pass/fail message
     public TextMeshProUGUI resultText;
 
+
+
     private string openAIKey = "OPEN API KEY";
     private string openAIEndpoint = "https://api.openai.com/v1/chat/completions";  // Correct endpoint for GPT-3.5-turbo
 

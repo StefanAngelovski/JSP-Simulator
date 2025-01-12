@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
-    public class ScoringSystem : MonoBehaviour
+public class ScoringSystem : MonoBehaviour
     {
         public GameObject grid1;
         public GameObject grid2;
@@ -52,6 +53,14 @@ using TMPro;
         public TextMeshProUGUI TotalBusStopsText;
         public TextMeshProUGUI CurrentStationText;
 
+        public Button SkipStationButton;
+
+    
+    public void OnSkipStation()
+        {
+        seconds = 1;
+        Debug.Log("Skipped station, seconds reset to 1");
+    }
 
     private void AddNotification(string message)
         {
@@ -75,7 +84,11 @@ using TMPro;
 
         public void Start()
         {
-            score = 0;
+        if (SkipStationButton != null)
+        {
+            SkipStationButton.onClick.AddListener(OnSkipStation);
+        }
+        score = 0;
 
         // Set the initial bus count
         int busCount = SharedGameData.BusCount; // Retrieve the value
