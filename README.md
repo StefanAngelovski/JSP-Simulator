@@ -18,7 +18,8 @@
 ## Built With  
 - **Engine:** [Unity](https://unity.com/)  
 - **Language:** C#  
-- **Core Systems:**  
+- **Core Systems:**
+  - OpenAi Integration: Measure how many bus station bus needs to go from any Municipality you enter.
   - Custom grid system for seating passengers.  
   - Animation and rigid body system for dynamic interactions.  
   - Characteristics tracking to enable secret achievements and satisfaction points.  
