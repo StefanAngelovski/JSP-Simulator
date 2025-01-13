@@ -2,8 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UI;
-using TMPro;  // Import TextMeshPro namespace
+using TMPro; 
 
 public class NPCSpawner : MonoBehaviour
 {
@@ -215,14 +214,11 @@ public class NPCSpawner : MonoBehaviour
 
     void AttachTextAboveNPC(GameObject npc)
     {
-        // Create a TextMeshPro object for each NPC
         GameObject textObject = new GameObject("NPCNameText");
-        textObject.transform.SetParent(npc.transform);  // Make it a child of the NPC
+        textObject.transform.SetParent(npc.transform); 
 
-        // Add TextMeshPro component
         TextMeshPro textMeshPro = textObject.AddComponent<TextMeshPro>();
 
-        // Set the font (use a TMP font asset, not regular Font)
         if (npcFont != null)
         {
             textMeshPro.font = npcFont;
@@ -233,12 +229,10 @@ public class NPCSpawner : MonoBehaviour
             textMeshPro.font = Resources.Load<TMP_FontAsset>("Fonts & Materials/MyFont");  // Ensure you have a TMP font in Resources
         }
 
-        // Set the text properties
-        textMeshPro.fontSize = 2f;  // Adjust the font size
-        textMeshPro.alignment = TextAlignmentOptions.Center;  // Center align the text
-        textMeshPro.color = defaultTextColor;  // Set default text color (greyish)
+        textMeshPro.fontSize = 2f;  
+        textMeshPro.alignment = TextAlignmentOptions.Center; 
+        textMeshPro.color = defaultTextColor;  
 
-        // Set a random name for the NPC
         if (SharedGameData.Municipalities.Count > 0)
         {
             textMeshPro.text = SharedGameData.Municipalities[Random.Range(0, SharedGameData.Municipalities.Count)];
@@ -248,17 +242,14 @@ public class NPCSpawner : MonoBehaviour
             textMeshPro.text = "Unnamed";
         }
 
-        // Position the text above the NPC
-        textObject.transform.position = npc.transform.position + new Vector3(0f, 2f, 0f);  // Adjust height above NPC
-
-        // Ensure the text faces the camera by rotating it
+        textObject.transform.position = npc.transform.position + new Vector3(0f, 2f, 0f);  
         StartCoroutine(UpdateTextRotation(textObject));
 
-        // Attach colliders and highlight logic
+
         Collider npcCollider = npc.GetComponent<Collider>();
         if (npcCollider == null)
         {
-            npcCollider = npc.AddComponent<BoxCollider>();  // Add a collider to the NPC if it doesn't have one
+            npcCollider = npc.AddComponent<BoxCollider>(); 
         }
 
         NPCHover npcHover = npc.AddComponent<NPCHover>();
@@ -268,25 +259,23 @@ public class NPCSpawner : MonoBehaviour
         npcHover.highlightMaterial = highlightMaterial;
     }
 
-    // Coroutine to make the text always face the camera
+
     IEnumerator UpdateTextRotation(GameObject textObject)
     {
-        Camera mainCamera = Camera.main;  // Get the main camera (ensure there's only one main camera in the scene)
+        Camera mainCamera = Camera.main; 
         while (true)
         {
             if (mainCamera != null && textObject != null)
             {
-                // Make the text face the camera
                 textObject.transform.rotation = Quaternion.LookRotation(textObject.transform.position - mainCamera.transform.position);
             }
-            yield return null;  // Wait for the next frame
+            yield return null;  
         }
     }
 }
     
 
 
-    // FollowNPC.cs script to make the text follow the NPC
     public class FollowNPC : MonoBehaviour
     {
         public GameObject npc;
@@ -295,14 +284,13 @@ public class NPCSpawner : MonoBehaviour
         {
             if (npc != null)
             {
-                // Update the position of the canvas to stay above the NPC
-                transform.position = npc.transform.position + new Vector3(0f, 2f, 0f);  // Adjust height above NPC
-                                                                                        // Optional: Ensure it always faces the camera
+                transform.position = npc.transform.position + new Vector3(0f, 2f, 0f); 
+                                                                                       
                 Camera mainCamera = Camera.main;
                 if (mainCamera != null)
                 {
-                    transform.LookAt(mainCamera.transform);  // Make the canvas face the camera
-                    transform.Rotate(0f, 180f, 0f);  // Correct the text rotation if needed
+                    transform.LookAt(mainCamera.transform);  
+                    transform.Rotate(0f, 180f, 0f);  
                 }
             }
         }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -50,6 +51,7 @@ public class Placement : MonoBehaviour
     private float bottomGridHeightOffset = 0.4f;
 
     private PeopleCounter peopleCounter;
+    private ScoringSystem scoringSystem;
 
     private void Start()
     {
@@ -65,6 +67,7 @@ public class Placement : MonoBehaviour
         }
         // Initialize AudioSource
         audioSource = gameObject.AddComponent<AudioSource>();
+        scoringSystem = FindFirstObjectByType<ScoringSystem>();
     }
 
     public void StartPlacement(int ID)
@@ -129,7 +132,7 @@ public class Placement : MonoBehaviour
             return;
 
         if (selectedObjectIndex < 0)
-        return;
+            return;
 
         Vector3 mousePosition = inputManager.GetMousePositionOnGrid();
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
@@ -147,6 +150,22 @@ public class Placement : MonoBehaviour
         if (originalNPC != null)
         {
             newObject = Instantiate(originalNPC);
+            
+            // Check NPC's destination against current bus stop
+            TextMeshPro npcText = originalNPC.GetComponentInChildren<TextMeshPro>();
+            if (npcText != null && scoringSystem != null)
+            {
+                string npcDestination = npcText.text.Trim();
+                string currentStation = SharedGameData.Municipalities[SharedGameData.BusCount - scoringSystem.RemainingBuses].Trim();
+                
+                // Check if this is the correct station for this passenger
+                if (npcDestination == currentStation)
+                {
+                    scoringSystem.AddScore(25);
+                    scoringSystem.AddNotification("Correct destination! +25");
+                }
+            }
+
             NavMeshAgent navMeshAgent = newObject.GetComponent<NavMeshAgent>();
             if (navMeshAgent != null)
             {
@@ -333,7 +352,7 @@ public class Placement : MonoBehaviour
 
     public void RemoveNPC(GameObject npc)
     {
-        if (npc != null && peopleCounter != null && npc.CompareTag("NPC"))
+        if (npc != null && peopleCounter != null && npc.CompareTag("Character"))
         {
             peopleCounter.DecrementCount();
         }
