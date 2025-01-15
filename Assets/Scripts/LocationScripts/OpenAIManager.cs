@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;  
-
+using System.Linq;
 
 public class OpenAIManager : MonoBehaviour
 {
@@ -23,7 +23,13 @@ public class OpenAIManager : MonoBehaviour
     public TextMeshProUGUI resultText;
 
 
+// OPEN API KEY ---------------------
+//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
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> parent of e3b240b (Update OpenAIManager.cs)
     private string openAIKey = "OPEN API KEY";
     private string openAIEndpoint = "https://api.openai.com/v1/chat/completions";  // Correct endpoint for GPT-3.5-turbo
 
@@ -97,7 +103,17 @@ public class OpenAIManager : MonoBehaviour
             if (jsonResponse != null && jsonResponse.choices != null && jsonResponse.choices.Length > 0)
             {
                 string message = jsonResponse.choices[0].message.content;
-                Debug.Log("OpenAI message: " + message); // Log the message content from OpenAI
+                
+                // Print each location in the path
+                Debug.Log("Path to destination:");
+                string[] locations = message.Split(',');
+                for (int i = 0; i < locations.Length; i++)
+                {
+                    Debug.Log($"Stop {i + 1}: {locations[i].Trim()}");
+                }
+
+                SharedGameData.Municipalities = new List<string>(locations.Select(l => l.Trim()));
+                SharedGameData.BusCount = locations.Length;
 
                 int locationCount = message.Split(',').Length;
                 Debug.Log("Total number of locations: " + locationCount);
@@ -106,8 +122,6 @@ public class OpenAIManager : MonoBehaviour
                 SetTexture(successImageUI);
                 resultText.text = locationCount + " BUS STOPS";
 
-                SharedGameData.Municipalities = new List<string>(message.Split(','));
-                SharedGameData.BusCount = locationCount; // Store the value in the static class
                 StartCoroutine(LoadMainSceneAfterDelay(2f));
 
             }

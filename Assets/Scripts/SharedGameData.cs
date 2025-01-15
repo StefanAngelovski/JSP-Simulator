@@ -11,6 +11,16 @@ public static class SharedGameData
     {
         "Karposh",
         "Aerodrom",
-        "Kisela Voda"
+        "Kisela Voda",
+        "Butel",
+        "Gazi Baba",
+        "Centar",
+        "Gjorce Petrov",
+        "Saraj",
+        "Cair",
+        "Ilinden",
+        "Sopishte",
+        "Studenicani",
+        "Zelenikovo"
     };
 }

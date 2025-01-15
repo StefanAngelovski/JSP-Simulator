@@ -62,7 +62,7 @@ public class ScoringSystem : MonoBehaviour
         Debug.Log("Skipped station, seconds reset to 1");
     }
 
-    private void AddNotification(string message)
+    public void AddNotification(string message)
         {
             if (notificationPanel == null || notificationPrefab == null)
             {
@@ -513,5 +513,17 @@ public class ScoringSystem : MonoBehaviour
         private void DisplayScorePanel(int score)
         {
             scoreText.text = score.ToString();
+        }
+
+        public int RemainingBuses => remainingBuses;
+
+        public void AddScore(int points)
+        {
+            score += points;
+            DisplayScorePanel(score);
+            if (points > 0)
+                scoreRawImageController.ShowScoreUpImage();
+            else
+                scoreRawImageController.ShowScoreDownImage();
         }
     }
