@@ -1,9 +1,8 @@
-using UnityEngine;
-using System.Collections.Generic;  // Add this line
+using System.Collections.Generic;  
 
 public static class SharedGameData
 {
-    public static int BusCount { get; set; } = 3; // Default value is 3
+    public static int BusCount { get; set; } = 3; 
 
     // List of municipalities
     // Default list with 3 random municipalities
@@ -13,14 +12,44 @@ public static class SharedGameData
         "Aerodrom",
         "Kisela Voda",
         "Butel",
-        "Gazi Baba",
-        "Centar",
+        "Chair",
         "Gjorce Petrov",
-        "Saraj",
-        "Cair",
-        "Ilinden",
-        "Sopishte",
-        "Studenicani",
-        "Zelenikovo"
+        "Shuto Orizari",
+        "Saraj"
     };
+
+    public static readonly Dictionary<int, List<string>> BusRoutes = new Dictionary<int, List<string>>
+    {
+        // Bus 2
+        {2, new List<string> {"Gjorce Petrov", "Vlae", "Taftalidze", "Karpos 3", "Karpos 4", "Karpos 1", "Centar"} },
+        
+        // Bus 5
+        {5, new List<string> {"Centar", "Aerodrom", "Novo Lisice", "Lisice"} },
+        
+        // Bus 22
+        {22, new List<string> {"Centar", "Butel", "Radishani"} },
+        
+        // Bus 24
+        {24, new List<string> {"Dracevo", "Pintija", "11 Oktomvri", "Kisela Voda", "Centar"} },
+        
+        // Bus 57
+        {57, new List<string> {"Centar", "Karpos", "Vlae", "Gjorce Petrov", "Deksion"} },
+        
+        // Bus 65
+        {65, new List<string> {"Centar", "Cair", "Cento", "Avtokomanda", "Aerodrom"} }
+    };
+
+    // Currently active bus route
+    public static int CurrentBusNumber { get; set; }
+    public static List<string> CurrentRoute { get; set; }
+    public static int CurrentStopIndex { get; set; } = 0;
+
+    // Initialize a random bus route
+    public static void SelectRandomBusRoute()
+    {
+        var busNumbers = new List<int>(BusRoutes.Keys);
+        CurrentBusNumber = busNumbers[UnityEngine.Random.Range(0, busNumbers.Count)];
+        CurrentRoute = BusRoutes[CurrentBusNumber];
+        CurrentStopIndex = 0;
+    }
 }

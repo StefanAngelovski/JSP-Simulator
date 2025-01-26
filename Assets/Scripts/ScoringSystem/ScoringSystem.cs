@@ -90,11 +90,13 @@ public class ScoringSystem : MonoBehaviour
         }
         score = 0;
 
-        // Set the initial bus count
-        int busCount = SharedGameData.BusCount; // Retrieve the value
-        SetBusCount(busCount); // Call your method to set the bus count
-        TotalBusStopsText.text = "0"+"/"+ busCount.ToString(); // Update the UI text
-        CurrentStationText.text = "Current Station:" + SharedGameData.Municipalities[0]; // Update the UI text
+        // Initialize the first bus route
+        SharedGameData.SelectRandomBusRoute();
+        SetBusCount(SharedGameData.BusCount);
+
+        // Update UI with bus number and current stop
+        TotalBusStopsText.text = "0/" + SharedGameData.CurrentRoute.Count;
+        CurrentStationText.text = $"Bus {SharedGameData.CurrentBusNumber}: {SharedGameData.CurrentRoute[0]}";
 
         if (Bus != null)
             {
@@ -133,12 +135,20 @@ public class ScoringSystem : MonoBehaviour
                             remainingBuses--;
                             minutes = initialMinutes;
                             seconds = 20; // Add 20 seconds for the next bus
+                            
                             if (busAnimator != null && isBusPresent && !isBusLeaving)
                             {
+                                SharedGameData.CurrentStopIndex++;
+                                if (SharedGameData.CurrentStopIndex >= SharedGameData.CurrentRoute.Count)
+                                {
+                                    // Select a new random bus route when current route is complete
+                                    SharedGameData.SelectRandomBusRoute();
+                                }
+                                
                                 StartCoroutine(HandleBusDeparture());
-                                TotalBusStopsText.text = (busCount - remainingBuses).ToString() + "/" + busCount.ToString();
-                            CurrentStationText.text = "Current Station:"+SharedGameData.Municipalities[busCount - remainingBuses];
-                        }
+                                TotalBusStopsText.text = $"{SharedGameData.CurrentStopIndex}/{SharedGameData.CurrentRoute.Count}";
+                                CurrentStationText.text = $"Bus {SharedGameData.CurrentBusNumber}: {SharedGameData.CurrentRoute[SharedGameData.CurrentStopIndex]}";
+                            }
                         }
                         else
                         {
@@ -276,7 +286,6 @@ public class ScoringSystem : MonoBehaviour
                  newPosition.z <= 26))
             {
                 score += 10;
-                Debug.Log("Adult placed on the right spot.");
                 scoreRawImageController.ShowScoreUpImage();
 
             }
@@ -286,7 +295,6 @@ public class ScoringSystem : MonoBehaviour
                 (newPosition.z >= 29 || (newPosition.x == 9 && (newPosition.y == 10 || newPosition.y == 8))))
             {
                 score += 10;
-                Debug.Log("Elder placed on the right spot.");
                 scoreRawImageController.ShowScoreUpImage();
 
             }
@@ -296,7 +304,6 @@ public class ScoringSystem : MonoBehaviour
                 ((newPosition.y == 10 || newPosition.y == 8) && newPosition.z == 28 || newPosition.z <= 26))
             {
                 score += 10;
-                Debug.Log("Kid placed on the right spot.");
                 scoreRawImageController.ShowScoreUpImage();
 
             }
