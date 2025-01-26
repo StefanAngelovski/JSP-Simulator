@@ -23,6 +23,8 @@ public class OpenAIManager : MonoBehaviour
     public TextMeshProUGUI resultText;
 
 
+// OPEN API KEY ---------------------
+//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
 
     private string openAIKey = "OPEN API KEY";
     private string openAIEndpoint = "https://api.openai.com/v1/chat/completions";  // Correct endpoint for GPT-3.5-turbo
