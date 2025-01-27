@@ -11,6 +11,7 @@ public static class SharedGameData
         "Karposh",
         "Aerodrom",
         "Kisela Voda",
+        "Bitpazar",
         "Butel",
         "Chair",
         "Gjorce Petrov",
@@ -21,22 +22,19 @@ public static class SharedGameData
     public static readonly Dictionary<int, List<string>> BusRoutes = new Dictionary<int, List<string>>
     {
         // Bus 2
-        {2, new List<string> {"Gjorce Petrov", "Vlae", "Taftalidze", "Karpos 3", "Karpos 4", "Karpos 1", "Centar"} },
+        {2, new List<string> {"Centar", "Karposh", "Taftalidze", "Deksion"} },
         
         // Bus 5
         {5, new List<string> {"Centar", "Aerodrom", "Novo Lisice", "Lisice"} },
         
         // Bus 22
-        {22, new List<string> {"Centar", "Butel", "Radishani"} },
+        {22, new List<string> {"Centar", "Karposh", "Taftalidze", "Gjorche Petrov", "Deksion"} },
         
         // Bus 24
-        {24, new List<string> {"Dracevo", "Pintija", "11 Oktomvri", "Kisela Voda", "Centar"} },
+        {24, new List<string> {"Centar", "Karposh", "Taftalidze", "Deksion"} },
         
         // Bus 57
-        {57, new List<string> {"Centar", "Karpos", "Vlae", "Gjorce Petrov", "Deksion"} },
-        
-        // Bus 65
-        {65, new List<string> {"Centar", "Cair", "Cento", "Avtokomanda", "Aerodrom"} }
+        {57, new List<string> {"Centar", "Bitpazar", "Chair", "Butel"} },
     };
 
     // Currently active bus route
